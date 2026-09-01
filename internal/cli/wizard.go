@@ -5,31 +5,77 @@ import (
 	"fmt"
 
 	"github.com/Dendro-X0/Orbit/internal/provider"
+	"github.com/Dendro-X0/Orbit/internal/state"
 	"github.com/charmbracelet/huh"
 )
 
 type configureWizardInput struct {
-	ProviderID  string
-	TargetID    string
-	Environment string
-	Confirm     bool
+	ConfigureAll bool
+	ProviderID   string
+	TargetID     string
+	Environment  string
+	Confirm      bool
 }
 
-func runConfigureWizard(ctx context.Context, root string, stProvider, stTarget, stEnv string) (configureWizardInput, error) {
-	input := configureWizardInput{
-		ProviderID:  stProvider,
-		TargetID:    stTarget,
-		Environment: stEnv,
-	}
+func runConfigureWizard(
+	ctx context.Context,
+	root string,
+	st state.Project,
+	stack []string,
+	defaultEnv string,
+) (configureWizardInput, error) {
+	input := configureWizardInput{Environment: defaultEnv}
 	if input.Environment == "" {
 		input.Environment = "production"
 	}
 
-	providers := provider.All()
-	if len(providers) == 0 {
-		return input, fmt.Errorf("no providers registered")
+	if len(stack) > 1 {
+		scope := "all"
+		if err := huh.NewSelect[string]().
+			Title("What do you want to configure?").
+			Options(
+				huh.NewOption(fmt.Sprintf("All detected providers (%s)", providerListLabel(stack)), "all"),
+				huh.NewOption("Single provider", "one"),
+			).
+			Value(&scope).
+			Run(); err != nil {
+			return input, err
+		}
+		if scope == "all" {
+			input.ConfigureAll = true
+			if err := huh.NewSelect[string]().
+				Title("Deployment environment").
+				Options(
+					huh.NewOption("Production", "production"),
+					huh.NewOption("Preview / local", "preview"),
+				).
+				Value(&input.Environment).
+				Run(); err != nil {
+				return input, err
+			}
+			summary := fmt.Sprintf("Providers: %s\nEnvironment: %s", providerListLabel(stack), input.Environment)
+			if err := huh.NewConfirm().
+				Title("Apply configuration?").
+				Description(summary).
+				Value(&input.Confirm).
+				Run(); err != nil {
+				return input, err
+			}
+			if !input.Confirm {
+				return input, fmt.Errorf("configure cancelled")
+			}
+			return input, nil
+		}
 	}
 
+	// Single provider flow
+	input.ProviderID = st.Provider
+	if input.ProviderID == "" && len(stack) == 1 {
+		input.ProviderID = stack[0]
+	}
+	input.TargetID = st.TargetFor(input.ProviderID)
+
+	providers := provider.All()
 	providerOptions := make([]huh.Option[string], 0, len(providers))
 	for _, p := range providers {
 		label := p.DisplayName()
@@ -149,7 +195,7 @@ func runMainMenu() (string, error) {
 		Title("orbit — deploy to your cloud").
 		Options(
 			huh.NewOption("Deploy this project", "deploy"),
-			huh.NewOption("Configure project", "configure"),
+			huh.NewOption("Configure project(s)", "configure"),
 			huh.NewOption("Log in to a provider", "login"),
 			huh.NewOption("Check setup (doctor)", "doctor"),
 			huh.NewOption("View last run logs", "logs"),

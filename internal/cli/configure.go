@@ -14,10 +14,12 @@ func newConfigureCmd() *cobra.Command {
 	var dryRun bool
 	var env string
 	var yes bool
+	var allFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "configure",
-		Short: "Interactive project setup for your provider",
+		Short: "Interactive project setup for your provider(s)",
+		Long:  "With --all or multiple detected providers, configures the full stack (e.g. Cloudflare + Vercel).",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root, err := projectRoot(cmd)
 			if err != nil {
@@ -28,60 +30,55 @@ func newConfigureCmd() *cobra.Command {
 			}
 
 			st, _ := state.Load(statePath(root))
-			provID := st.Provider
-			targetID := st.TargetID
 			environment := env
+			if environment == "" {
+				environment = "production"
+			}
 
-			useWizard := isInteractive() && !yes && providerFlag == "" && !dryRun
-			if useWizard {
-				wizard, err := runConfigureWizard(cmd.Context(), root, provID, targetID, environment)
+			stack := detectStack(cmd.Context(), root)
+			if len(stack) == 0 {
+				return fmt.Errorf("no supported provider detected in this project")
+			}
+
+			targets := map[string]string{}
+			var configureIDs []string
+
+			useWizard := isInteractive() && !yes && providerFlag == "" && !allFlag && !dryRun
+
+			switch {
+			case allFlag:
+				configureIDs = stack
+			case providerFlag != "":
+				configureIDs = []string{providerFlag}
+				targets[providerFlag] = st.TargetFor(providerFlag)
+			case useWizard:
+				wizard, err := runConfigureWizard(cmd.Context(), root, st, stack, environment)
 				if err != nil {
 					return err
 				}
-				provID = wizard.ProviderID
-				targetID = wizard.TargetID
-				environment = wizard.Environment
-			} else {
-				if provID == "" {
-					provID = pickProvider(root)
+				if wizard.ConfigureAll {
+					configureIDs = stack
+					environment = wizard.Environment
+				} else {
+					configureIDs = []string{wizard.ProviderID}
+					targets[wizard.ProviderID] = wizard.TargetID
+					environment = wizard.Environment
 				}
-				if provID == "" {
-					return fmt.Errorf("no supported provider detected — pass --provider")
-				}
+			default:
+				configureIDs = stack
 			}
 
-			p, err := provider.Get(provID)
+			if len(configureIDs) > 1 {
+				fmt.Printf("Configuring stack: %s\n\n", providerListLabel(configureIDs))
+			}
+
+			st, err = configureStack(cmd.Context(), root, configureIDs, st, targets, environment, dryRun)
 			if err != nil {
 				return err
 			}
 
-			if !useWizard {
-				fmt.Printf("Configuring %s at %s\n\n", p.DisplayName(), root)
-			}
-
-			res, err := p.Configure(cmd.Context(), root, provider.ConfigureOptions{
-				Environment: environment,
-				TargetID:    targetID,
-				DryRun:      dryRun,
-			})
-			if err != nil {
-				return err
-			}
-
-			printConfigureResult(res)
-
-			if res.OK && !dryRun {
-				st.Provider = provID
-				st.TargetID = targetID
-				st.Configured = true
-				if environment != "" {
-					st.Environment = environment
-				}
-				if err := state.Save(statePath(root), st); err != nil {
-					return err
-				}
-			} else if !res.OK {
-				return fmt.Errorf("configure failed")
+			if !dryRun {
+				return state.Save(statePath(root), st)
 			}
 			return nil
 		},
@@ -89,7 +86,8 @@ func newConfigureCmd() *cobra.Command {
 
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "show planned changes without applying")
 	cmd.Flags().StringVar(&env, "env", "production", "target environment")
-	cmd.Flags().StringVar(&providerFlag, "provider", "", "provider id (cloudflare, …)")
+	cmd.Flags().StringVar(&providerFlag, "provider", "", "configure a single provider")
+	cmd.Flags().BoolVar(&allFlag, "all", false, "configure all detected providers")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip interactive prompts")
 	return cmd
 }

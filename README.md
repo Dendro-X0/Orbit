@@ -32,8 +32,9 @@ Use `orbit` with no arguments for an interactive menu (TTY required).
 | `orbit` | Interactive menu |
 | `orbit login [provider]` | Authenticate (`cloudflare`, `vercel`, …) |
 | `orbit whoami` | Show connected accounts |
-| `orbit configure` | Interactive project setup |
-| `orbit deploy` | Configure (if needed) + build + deploy |
+| `orbit configure --all` | Configure every detected provider |
+| `orbit deploy` | Deploy all detected providers (API first, then docs) |
+| `orbit deploy --provider cloudflare` | Deploy a single provider |
 | `orbit doctor` | Tool + provider health checks |
 | `orbit logs` | View last run logs |
 
