@@ -30,7 +30,7 @@ Use `orbit` with no arguments for an interactive menu (TTY required).
 | Command | Purpose |
 |---------|---------|
 | `orbit` | Interactive menu |
-| `orbit login [provider]` | Authenticate via provider shortcut |
+| `orbit login [provider]` | Authenticate (`cloudflare`, `vercel`, …) |
 | `orbit whoami` | Show connected accounts |
 | `orbit configure` | Interactive project setup |
 | `orbit deploy` | Configure (if needed) + build + deploy |
