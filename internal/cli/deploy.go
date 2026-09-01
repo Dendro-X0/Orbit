@@ -64,5 +64,6 @@ func newDeployCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&env, "env", "production", "target environment")
+	cmd.Flags().StringVar(&providerFlag, "provider", "", "deploy a single provider")
 	return cmd
 }

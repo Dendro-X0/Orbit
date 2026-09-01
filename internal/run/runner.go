@@ -127,6 +127,7 @@ func (r *Runner) Execute(ctx context.Context, opts Options, steps []Step) (*Resu
 	if err := writeJSON(filepath.Join(runDir, "manifest.json"), manifest); err != nil {
 		return nil, err
 	}
+	_ = writeLatest(opts.Root, runDir)
 
 	duration := time.Since(started).Round(time.Millisecond).String()
 	result := &Result{Manifest: manifest, RunDir: runDir}
@@ -154,7 +155,6 @@ func (r *Runner) Execute(ctx context.Context, opts Options, steps []Step) (*Resu
 		return nil, err
 	}
 	result.Summary = summary
-	_ = writeLatest(opts.Root, runDir)
 	return result, nil
 }
 

@@ -274,4 +274,16 @@ func (p *Provider) cmdEnv() []string {
 
 func init() {
 	provider.Register(New())
+	provider.RegisterAuthGuide(provider.AuthGuide{
+		ProviderID:  ID,
+		TokenLabel:  "Vercel access token",
+		CreateURL:   "https://vercel.com/account/settings/tokens",
+		DocsURL:     "https://vercel.com/docs/rest-api#creating-an-access-token",
+		Permissions: "Full Account or scoped access to the target project (deploy + env vars)",
+		Steps: []string{
+			"Click \"Create\" on the Tokens page",
+			"Choose a scope that includes your docs project (or Full Account for simplicity)",
+			"Copy the token — it is shown only once",
+		},
+	})
 }

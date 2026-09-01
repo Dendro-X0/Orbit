@@ -232,4 +232,16 @@ func (p *Provider) cmdEnv() []string {
 
 func init() {
 	provider.Register(New())
+	provider.RegisterAuthGuide(provider.AuthGuide{
+		ProviderID:  ID,
+		TokenLabel:  "Cloudflare API token",
+		CreateURL:   "https://dash.cloudflare.com/profile/api-tokens",
+		DocsURL:     "https://developers.cloudflare.com/fundamentals/api/get-started/create-token/",
+		Permissions: "Workers Scripts (edit), Workers KV (edit), D1 (edit), Account Settings (read)",
+		Steps: []string{
+			"Click \"Create Token\" on the API Tokens page",
+			"Use the \"Edit Cloudflare Workers\" template, or create a custom token with Workers + D1 permissions",
+			"Copy the token — it is shown only once",
+		},
+	})
 }

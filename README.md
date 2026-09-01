@@ -1,10 +1,8 @@
 # Orbit
 
-Deploy to your cloud — login, configure, build, and release with synchronized logs for humans and agents.
+A cross-platform deploy portal — login, configure, deploy, and read logs across cloud providers.
 
-## Status
-
-Early scaffold. Provider plugins own stack detection and deployment; the core owns UX, auth shortcuts, phased runs, and structured failure output.
+Orbit does not replace official provider tools. It orchestrates them: `wrangler`, `vercel`, and others own auth, deployment, and configuration complexity. Orbit owns the unified UX, phased runs, synchronized logs, and agent-readable failures.
 
 ## Install (dev)
 
@@ -17,8 +15,8 @@ go install ./cmd/orbit
 ```bash
 cd your-project
 orbit doctor
-orbit login cloudflare
-orbit configure    # interactive wizard
+orbit login cloudflare    # opens provider OAuth in browser
+orbit configure           # interactive wizard
 orbit deploy
 orbit logs
 ```
@@ -32,8 +30,9 @@ When both Cloudflare and Vercel are in the stack, `orbit deploy` automatically w
 | Command | Purpose |
 |---------|---------|
 | `orbit` | Interactive menu |
-| `orbit login [provider]` | Authenticate (`cloudflare`, `vercel`, …) |
-| `orbit login --token <token>` | Store an API token in the OS keychain |
+| `orbit login [provider]` | Provider OAuth via official CLI (portal) |
+| `orbit login --guide` | Manual API token wizard (CI / headless fallback) |
+| `orbit login --token <token>` | Store token directly (scripting) |
 | `orbit logout [provider]` | Remove stored API tokens |
 | `orbit whoami` | Show connected accounts |
 | `orbit configure --all` | Configure every detected provider |
@@ -56,9 +55,9 @@ Each deploy writes to `.orbit/runs/<timestamp>/`:
 ## Architecture
 
 ```
-cmd/orbit         CLI entry
-internal/cli      Cobra commands
-internal/run      Phased runner + log sync
+cmd/orbit           CLI entry
+internal/cli        Cobra commands + wizards
+internal/run        Phased runner + log sync
 internal/provider   Provider interface + registry
 internal/providers  Cloudflare, Vercel, …
 ```

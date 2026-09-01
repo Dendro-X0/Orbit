@@ -180,7 +180,7 @@ func runLoginWizard() (string, error) {
 		options = append(options, huh.NewOption(p.DisplayName(), p.ID()))
 	}
 	if err := huh.NewSelect[string]().
-		Title("Log in to provider").
+		Title("Set up authentication for").
 		Options(options...).
 		Value(&id).
 		Run(); err != nil {
