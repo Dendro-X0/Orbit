@@ -26,7 +26,10 @@ func NewRoot() *cobra.Command {
 	cmd.AddCommand(newWhoamiCmd())
 	cmd.AddCommand(newConfigureCmd())
 	cmd.AddCommand(newDeployCmd())
+	cmd.AddCommand(newRetryCmd())
 	cmd.AddCommand(newWireCmd())
+	cmd.AddCommand(newStatusCmd())
+	cmd.AddCommand(newOpenCmd())
 	cmd.AddCommand(newDoctorCmd())
 	cmd.AddCommand(newLogsCmd())
 	cmd.AddCommand(newVersionCmd())
@@ -57,7 +60,8 @@ func runMenu(cmd *cobra.Command, _ []string) error {
 	fmt.Println("  [2] Configure project       orbit configure")
 	fmt.Println("  [3] Log in to a provider    orbit login")
 	fmt.Println("  [4] Check setup             orbit doctor")
-	fmt.Println("  [5] View last run logs      orbit logs")
+	fmt.Println("  [5] Project status          orbit status")
+	fmt.Println("  [6] View last run logs      orbit logs")
 	fmt.Println()
 	fmt.Println("Run `orbit <command> --help` for details.")
 	return nil
@@ -73,6 +77,8 @@ func runMenuAction(cmd *cobra.Command, action string) error {
 		return newLoginCmd().RunE(cmd, nil)
 	case "doctor":
 		return newDoctorCmd().RunE(cmd, nil)
+	case "status":
+		return newStatusCmd().RunE(cmd, nil)
 	case "logs":
 		return newLogsCmd().RunE(cmd, nil)
 	default:

@@ -38,6 +38,9 @@ When both Cloudflare and Vercel are in the stack, `orbit deploy` automatically w
 | `orbit configure --all` | Configure every detected provider |
 | `orbit deploy` | Deploy all detected providers (API first, then docs) |
 | `orbit deploy --provider cloudflare` | Deploy a single provider |
+| `orbit retry` | Resume from last failed deploy step |
+| `orbit status` | Project config + last run |
+| `orbit open` | Open last deploy URL in browser |
 | `orbit wire` | Set `VITE_API_URL` on Vercel from last Workers deploy |
 | `orbit doctor` | Tool + provider health checks |
 | `orbit logs` | View last run logs |

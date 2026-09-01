@@ -43,6 +43,11 @@ func newDoctorCmd() *cobra.Command {
 				}
 			}
 
+			root, _ := projectRoot(cmd)
+			if root != "" {
+				printToolkitHints(root)
+			}
+
 			if !ok {
 				return fmt.Errorf("doctor found issues")
 			}
