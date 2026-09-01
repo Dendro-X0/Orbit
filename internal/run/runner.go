@@ -185,7 +185,7 @@ func (l *StepLogger) write(file *os.File, line string, live io.Writer) {
 	_, _ = file.WriteString(redacted)
 	_, _ = l.combined.WriteString(redacted)
 	if l.printLive && live != nil {
-		_, _ = live.WriteString(redacted)
+		_, _ = io.WriteString(live, redacted)
 	}
 }
 
