@@ -96,6 +96,9 @@ func ensureConfigured(
 func printDeployResult(result *run.Result, err error) error {
 	if result != nil && result.Summary != nil {
 		fmt.Printf("\n✓ Deployed in %s\n", result.Summary.Duration)
+		if result.Summary.URL != "" {
+			fmt.Printf("  API URL: %s\n", result.Summary.URL)
+		}
 		fmt.Printf("  Logs: %s\n", result.Summary.RunDir)
 	}
 	if result != nil && result.Failure != nil {

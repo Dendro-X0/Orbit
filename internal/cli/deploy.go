@@ -41,7 +41,8 @@ func newDeployCmd() *cobra.Command {
 				return err
 			}
 
-			steps, err := buildDeploySteps(root, st, ids, deployEnv)
+			session := run.Session{}
+			steps, err := buildDeploySteps(root, st, ids, deployEnv, &session)
 			if err != nil {
 				return err
 			}
@@ -55,6 +56,7 @@ func newDeployCmd() *cobra.Command {
 				Provider:  label,
 				Command:   "deploy",
 				PrintLive: true,
+				Session:   &session,
 			}, steps)
 
 			return printDeployResult(result, err)

@@ -50,7 +50,7 @@ func TestBuildDeployStepsMultiProvider(t *testing.T) {
 	st.SetProvider("stub-a", "api", true)
 	st.SetProvider("stub-b", "docs", true)
 
-	steps, err := buildDeploySteps(t.TempDir(), st, []string{"stub-a", "stub-b"}, "production")
+	steps, err := buildDeploySteps(t.TempDir(), st, []string{"stub-a", "stub-b"}, "production", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,6 +59,29 @@ func TestBuildDeployStepsMultiProvider(t *testing.T) {
 	}
 	if steps[0].ID != "stub-a-step" {
 		t.Fatalf("first step id = %q", steps[0].ID)
+	}
+}
+
+func TestBuildDeployStepsInsertsWireStep(t *testing.T) {
+	provider.Register(stubProvider{id: "cloudflare", phases: 2})
+	provider.Register(stubProvider{id: "vercel", phases: 2})
+
+	st := state.Project{}
+	st.SetProvider("cloudflare", "api", true)
+	st.SetProvider("vercel", "docs", true)
+
+	steps, err := buildDeploySteps(t.TempDir(), st, []string{"cloudflare", "vercel"}, "production", &run.Session{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(steps) != 5 {
+		t.Fatalf("steps = %d, want 5", len(steps))
+	}
+	if steps[2].ID != "wire-vite-api-url" {
+		t.Fatalf("wire step id = %q, want wire-vite-api-url", steps[2].ID)
+	}
+	if steps[3].ID != "vercel-step" {
+		t.Fatalf("vercel step id = %q", steps[3].ID)
 	}
 }
 

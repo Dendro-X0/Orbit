@@ -25,6 +25,7 @@ func NewRoot() *cobra.Command {
 	cmd.AddCommand(newWhoamiCmd())
 	cmd.AddCommand(newConfigureCmd())
 	cmd.AddCommand(newDeployCmd())
+	cmd.AddCommand(newWireCmd())
 	cmd.AddCommand(newDoctorCmd())
 	cmd.AddCommand(newLogsCmd())
 	cmd.AddCommand(newVersionCmd())

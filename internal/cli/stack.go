@@ -56,7 +56,7 @@ func resolveDeployProviders(ctx context.Context, root string, st state.Project, 
 	return stack, nil
 }
 
-func buildDeploySteps(root string, st state.Project, ids []string, env string) ([]run.Step, error) {
+func buildDeploySteps(root string, st state.Project, ids []string, env string, session *run.Session) ([]run.Step, error) {
 	var steps []run.Step
 	for _, id := range ids {
 		p, err := provider.Get(id)
@@ -77,6 +77,9 @@ func buildDeploySteps(root string, st state.Project, ids []string, env string) (
 				Title: fmt.Sprintf("[%s] %s", p.DisplayName(), phase.Title),
 				Run:   phase.Run,
 			})
+		}
+		if id == "cloudflare" && stackContains(ids, "vercel") && session != nil {
+			steps = append(steps, wireAPIURLStep(session, root, st, env))
 		}
 	}
 	return steps, nil

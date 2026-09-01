@@ -24,6 +24,7 @@ type Options struct {
 	Command   string
 	RunID     string
 	PrintLive bool
+	Session   *Session
 }
 
 type Result struct {
@@ -40,6 +41,9 @@ func (r *Runner) Execute(ctx context.Context, opts Options, steps []Step) (*Resu
 		opts.RunID = time.Now().UTC().Format("2006-01-02T15-04-05Z")
 	}
 	runDir := filepath.Join(opts.Root, ".orbit", "runs", opts.RunID)
+	if opts.Session != nil {
+		opts.Session.RunDir = runDir
+	}
 	if err := os.MkdirAll(filepath.Join(runDir, "steps"), 0o755); err != nil {
 		return nil, err
 	}
@@ -142,6 +146,9 @@ func (r *Runner) Execute(ctx context.Context, opts Options, steps []Step) (*Resu
 		Provider: opts.Provider,
 		RunDir:   rel(opts.Root, runDir),
 		Duration: duration,
+	}
+	if opts.Session != nil && opts.Session.APIURL != "" {
+		summary.URL = opts.Session.APIURL
 	}
 	if err := writeJSON(filepath.Join(runDir, "summary.json"), summary); err != nil {
 		return nil, err

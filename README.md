@@ -25,6 +25,8 @@ orbit logs
 
 Use `orbit` with no arguments for an interactive menu (TTY required).
 
+When both Cloudflare and Vercel are in the stack, `orbit deploy` automatically wires `VITE_API_URL` on Vercel from the Workers deploy URL before the Vercel deploy phase.
+
 ## Commands
 
 | Command | Purpose |
@@ -35,6 +37,7 @@ Use `orbit` with no arguments for an interactive menu (TTY required).
 | `orbit configure --all` | Configure every detected provider |
 | `orbit deploy` | Deploy all detected providers (API first, then docs) |
 | `orbit deploy --provider cloudflare` | Deploy a single provider |
+| `orbit wire` | Set `VITE_API_URL` on Vercel from last Workers deploy |
 | `orbit doctor` | Tool + provider health checks |
 | `orbit logs` | View last run logs |
 
