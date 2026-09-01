@@ -1,0 +1,8 @@
+/bin/
+/dist/
+.orbit/runs/
+*.exe
+*.test
+.DS_Store
+.idea/
+.vscode/
