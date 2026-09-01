@@ -71,3 +71,22 @@ func TestSetFlyToken(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestSetNetlifyToken(t *testing.T) {
+	if err := Delete("netlify"); err != nil {
+		t.Fatal(err)
+	}
+	if err := Set("netlify", "netlify-token"); err != nil {
+		t.Fatal(err)
+	}
+	env, err := Env("netlify")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(env) != 1 || env[0] != "NETLIFY_AUTH_TOKEN=netlify-token" {
+		t.Fatalf("env = %#v", env)
+	}
+	if err := Delete("netlify"); err != nil {
+		t.Fatal(err)
+	}
+}

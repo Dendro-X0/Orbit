@@ -54,6 +54,21 @@ func TestExtractDeployURLsFlyAPI(t *testing.T) {
 	}
 }
 
+func TestExtractNetlifyURL(t *testing.T) {
+	log := `Website URL: https://my-docs.netlify.app`
+	if got := ExtractNetlifyURL(log); got != "https://my-docs.netlify.app" {
+		t.Fatalf("got %q", got)
+	}
+}
+
+func TestExtractDeployURLsNetlifyDocs(t *testing.T) {
+	log := `Live URL: https://my-docs.netlify.app`
+	urls := ExtractDeployURLs(log)
+	if urls.Docs != "https://my-docs.netlify.app" {
+		t.Fatalf("docs %q", urls.Docs)
+	}
+}
+
 func TestProviderFromStepID(t *testing.T) {
 	if got := providerFromStepID("cloudflare-whoami"); got != "cloudflare" {
 		t.Fatalf("got %q", got)

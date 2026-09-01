@@ -2,7 +2,7 @@
 
 A cross-platform deploy portal — login, configure, deploy, and read logs across cloud providers.
 
-Orbit does not replace official provider tools. It orchestrates them: `wrangler`, `vercel`, `fly`, and others own auth, deployment, and configuration complexity. Orbit owns the unified UX, phased runs, synchronized logs, and agent-readable failures.
+Orbit does not replace official provider tools. It orchestrates them: `wrangler`, `vercel`, `fly`, `netlify`, and others own auth, deployment, and configuration complexity. Orbit owns the unified UX, phased runs, synchronized logs, and agent-readable failures.
 
 ## Install (dev)
 
@@ -23,7 +23,7 @@ orbit logs
 
 Use `orbit` with no arguments for an interactive menu (TTY required).
 
-**Providers:** Cloudflare Workers, Vercel, Fly.io (detected via `wrangler.toml`, `vercel.json`, `fly.toml`).
+**Providers:** Cloudflare Workers, Vercel, Fly.io, Netlify (detected via `wrangler.toml`, `vercel.json`, `fly.toml`, `netlify.toml`).
 
 When both Cloudflare and Vercel are in the stack, `orbit deploy` automatically wires `VITE_API_URL` on Vercel from the Workers deploy URL before the Vercel deploy phase.
 

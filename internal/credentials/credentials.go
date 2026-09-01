@@ -15,6 +15,7 @@ var envKeys = map[string]string{
 	"cloudflare": "CLOUDFLARE_API_TOKEN",
 	"vercel":     "VERCEL_TOKEN",
 	"fly":        "FLY_API_TOKEN",
+	"netlify":    "NETLIFY_AUTH_TOKEN",
 }
 
 // Set stores a provider API token in the OS keychain.

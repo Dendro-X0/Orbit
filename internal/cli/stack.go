@@ -12,7 +12,7 @@ import (
 )
 
 // Deploy order: backend/edge before frontend.
-var stackOrder = []string{"cloudflare", "fly", "vercel", "railway"}
+var stackOrder = []string{"cloudflare", "fly", "vercel", "netlify", "railway"}
 
 func detectStack(ctx context.Context, root string) []string {
 	supported := map[string]bool{}
