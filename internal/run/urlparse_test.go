@@ -39,6 +39,21 @@ https://assess-docs.vercel.app`
 	}
 }
 
+func TestExtractFlyURL(t *testing.T) {
+	log := `Visit your newly deployed app at https://my-api.fly.dev`
+	if got := ExtractFlyURL(log); got != "https://my-api.fly.dev" {
+		t.Fatalf("got %q", got)
+	}
+}
+
+func TestExtractDeployURLsFlyAPI(t *testing.T) {
+	log := `https://my-api.fly.dev deployed`
+	urls := ExtractDeployURLs(log)
+	if urls.API != "https://my-api.fly.dev" {
+		t.Fatalf("api %q", urls.API)
+	}
+}
+
 func TestProviderFromStepID(t *testing.T) {
 	if got := providerFromStepID("cloudflare-whoami"); got != "cloudflare" {
 		t.Fatalf("got %q", got)

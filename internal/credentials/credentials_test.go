@@ -48,7 +48,26 @@ func TestSetGetDelete(t *testing.T) {
 }
 
 func TestSetUnsupportedProvider(t *testing.T) {
-	if err := Set("fly", "token"); err == nil {
+	if err := Set("railway", "token"); err == nil {
 		t.Fatal("expected error for unsupported provider")
+	}
+}
+
+func TestSetFlyToken(t *testing.T) {
+	if err := Delete("fly"); err != nil {
+		t.Fatal(err)
+	}
+	if err := Set("fly", "fly-token"); err != nil {
+		t.Fatal(err)
+	}
+	env, err := Env("fly")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(env) != 1 || env[0] != "FLY_API_TOKEN=fly-token" {
+		t.Fatalf("env = %#v", env)
+	}
+	if err := Delete("fly"); err != nil {
+		t.Fatal(err)
 	}
 }

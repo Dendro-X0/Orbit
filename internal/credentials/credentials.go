@@ -14,6 +14,7 @@ var ErrNotFound = errors.New("credential not found")
 var envKeys = map[string]string{
 	"cloudflare": "CLOUDFLARE_API_TOKEN",
 	"vercel":     "VERCEL_TOKEN",
+	"fly":        "FLY_API_TOKEN",
 }
 
 // Set stores a provider API token in the OS keychain.
