@@ -230,6 +230,11 @@ func (p *Provider) cmdEnv() []string {
 	return env
 }
 
+// CmdEnv returns environment variables for wrangler subprocesses.
+func CmdEnv() []string {
+	return (&Provider{}).cmdEnv()
+}
+
 func init() {
 	provider.Register(New())
 	provider.RegisterAuthGuide(provider.AuthGuide{

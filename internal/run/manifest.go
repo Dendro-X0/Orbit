@@ -33,6 +33,8 @@ type Summary struct {
 	Command  string `json:"command"`
 	Provider string `json:"provider,omitempty"`
 	URL      string `json:"url,omitempty"`
+	APIURL   string `json:"apiUrl,omitempty"`
+	DocsURL  string `json:"docsUrl,omitempty"`
 	Message  string `json:"message,omitempty"`
 	RunDir   string `json:"runDir"`
 	Duration string `json:"duration"`

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Dendro-X0/Orbit/internal/provider"
 	"github.com/Dendro-X0/Orbit/internal/run"
+	"github.com/Dendro-X0/Orbit/internal/state"
 	"github.com/spf13/cobra"
 )
 
@@ -58,6 +59,13 @@ func newDoctorCmd() *cobra.Command {
 			root, _ := projectRoot(cmd)
 			if root != "" {
 				printToolkitHints(root)
+				st, _ := state.Load(statePath(root))
+				stack := detectStack(cmd.Context(), root)
+				if len(stack) > 0 {
+					if msg := cloudflareSecretsSummary(cmd.Context(), root, st); msg != "" {
+						fmt.Printf("\nSecrets: %s\n", msg)
+					}
+				}
 			}
 
 			if !ok {

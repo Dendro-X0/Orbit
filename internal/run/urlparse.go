@@ -2,7 +2,16 @@ package run
 
 import "regexp"
 
-var workersURLRe = regexp.MustCompile(`https://[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]*workers\.dev`)
+var (
+	workersURLRe = regexp.MustCompile(`https://[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]*workers\.dev`)
+	vercelURLRe  = regexp.MustCompile(`https://[a-zA-Z0-9-]+\.vercel\.app`)
+)
+
+// DeployURLs holds URLs parsed from deploy logs.
+type DeployURLs struct {
+	API  string
+	Docs string
+}
 
 // ExtractWorkersURL returns the last Workers deploy URL found in log output.
 func ExtractWorkersURL(text string) string {
@@ -11,4 +20,21 @@ func ExtractWorkersURL(text string) string {
 		return ""
 	}
 	return matches[len(matches)-1]
+}
+
+// ExtractVercelURL returns the last Vercel deployment URL found in log output.
+func ExtractVercelURL(text string) string {
+	matches := vercelURLRe.FindAllString(text, -1)
+	if len(matches) == 0 {
+		return ""
+	}
+	return matches[len(matches)-1]
+}
+
+// ExtractDeployURLs parses API and docs URLs from combined deploy output.
+func ExtractDeployURLs(text string) DeployURLs {
+	return DeployURLs{
+		API:  ExtractWorkersURL(text),
+		Docs: ExtractVercelURL(text),
+	}
 }

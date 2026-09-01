@@ -30,6 +30,7 @@ func NewRoot() *cobra.Command {
 	cmd.AddCommand(newWireCmd())
 	cmd.AddCommand(newStatusCmd())
 	cmd.AddCommand(newOpenCmd())
+	cmd.AddCommand(newSecretsCmd())
 	cmd.AddCommand(newDoctorCmd())
 	cmd.AddCommand(newLogsCmd())
 	cmd.AddCommand(newVersionCmd())
@@ -79,6 +80,8 @@ func runMenuAction(cmd *cobra.Command, action string) error {
 		return newDoctorCmd().RunE(cmd, nil)
 	case "status":
 		return newStatusCmd().RunE(cmd, nil)
+	case "secrets":
+		return newSecretsCmd().RunE(cmd, nil)
 	case "logs":
 		return newLogsCmd().RunE(cmd, nil)
 	default:

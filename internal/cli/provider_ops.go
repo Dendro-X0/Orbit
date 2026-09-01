@@ -97,13 +97,20 @@ func ensureConfigured(
 	return configureStack(ctx, root, pending, st, nil, env, false)
 }
 
-func printDeployResult(result *run.Result, err error) error {
+func printDeployResult(ctx context.Context, root string, st state.Project, label string, result *run.Result, err error) error {
 	if result != nil && result.Summary != nil {
 		fmt.Printf("\n✓ Deployed in %s\n", result.Summary.Duration)
-		if result.Summary.URL != "" {
-			fmt.Printf("  API URL: %s\n", result.Summary.URL)
+		if result.Summary.APIURL != "" {
+			fmt.Printf("  API URL:  %s\n", result.Summary.APIURL)
 		}
-		fmt.Printf("  Logs: %s\n", result.Summary.RunDir)
+		if result.Summary.DocsURL != "" {
+			fmt.Printf("  Docs URL: %s\n", result.Summary.DocsURL)
+		}
+		if result.Summary.APIURL != "" || result.Summary.DocsURL != "" {
+			fmt.Println("  Open:     orbit open --target api|docs")
+		}
+		fmt.Printf("  Logs:     %s\n", result.Summary.RunDir)
+		printSecretsReminder(ctx, root, st, label)
 	}
 	if result != nil && result.Failure != nil {
 		fmt.Fprintf(os.Stderr, "\n✗ Deploy failed at step %s\n", result.Failure.FailedStep)
@@ -111,7 +118,8 @@ func printDeployResult(result *run.Result, err error) error {
 		if result.Failure.Hint != nil && result.Failure.Hint.Action != "" {
 			fmt.Fprintf(os.Stderr, "  action: %s\n", result.Failure.Hint.Action)
 		}
-		fmt.Fprintf(os.Stderr, "  logs: %s\n", result.Failure.LogPaths.Combined)
+		fmt.Fprintf(os.Stderr, "  retry: orbit retry\n")
+		fmt.Fprintf(os.Stderr, "  logs:  %s\n", result.Failure.LogPaths.Combined)
 	}
 	return err
 }

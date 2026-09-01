@@ -198,6 +198,7 @@ func runMainMenu() (string, error) {
 			huh.NewOption("Configure project(s)", "configure"),
 			huh.NewOption("Log in to a provider", "login"),
 			huh.NewOption("Check setup (doctor)", "doctor"),
+			huh.NewOption("Set worker secrets", "secrets"),
 			huh.NewOption("Project status", "status"),
 			huh.NewOption("View last run logs", "logs"),
 			huh.NewOption("Quit", "quit"),

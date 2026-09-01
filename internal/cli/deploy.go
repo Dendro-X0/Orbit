@@ -63,7 +63,7 @@ func newDeployCmd() *cobra.Command {
 				Session:   &session,
 			}, steps)
 
-			return printDeployResult(result, err)
+			return printDeployResult(cmd.Context(), root, st, label, result, err)
 		},
 	}
 

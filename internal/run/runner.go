@@ -92,7 +92,7 @@ func (r *Runner) Execute(ctx context.Context, opts Options, steps []Step) (*Resu
 		}
 		if err != nil {
 			record.Error = err.Error()
-			record.Hint = classifyError(err)
+			record.Hint = classifyError(err, step.ID)
 			manifest.OK = false
 			manifest.Steps = append(manifest.Steps, record)
 			manifest.EndedAt = time.Now().UTC()
@@ -148,8 +148,23 @@ func (r *Runner) Execute(ctx context.Context, opts Options, steps []Step) (*Resu
 		RunDir:   rel(opts.Root, runDir),
 		Duration: duration,
 	}
-	if opts.Session != nil && opts.Session.APIURL != "" {
-		summary.URL = opts.Session.APIURL
+	if b, err := os.ReadFile(combinedPath); err == nil {
+		urls := ExtractDeployURLs(string(b))
+		if opts.Session != nil && opts.Session.APIURL != "" {
+			summary.APIURL = opts.Session.APIURL
+		} else if urls.API != "" {
+			summary.APIURL = urls.API
+		}
+		if opts.Session != nil && opts.Session.DocsURL != "" {
+			summary.DocsURL = opts.Session.DocsURL
+		} else if urls.Docs != "" {
+			summary.DocsURL = urls.Docs
+		}
+	}
+	if summary.APIURL != "" {
+		summary.URL = summary.APIURL
+	} else if summary.DocsURL != "" {
+		summary.URL = summary.DocsURL
 	}
 	if err := writeJSON(filepath.Join(runDir, "summary.json"), summary); err != nil {
 		return nil, err
@@ -247,14 +262,33 @@ func LatestRunDir(root string) (string, error) {
 	return filepath.Join(root, strings.TrimSpace(string(b))), nil
 }
 
-func classifyError(err error) *Hint {
+func classifyError(err error, stepID string) *Hint {
 	msg := err.Error()
+	lower := strings.ToLower(msg)
+	providerID := providerFromStepID(stepID)
+	loginAction := "Run: orbit login <provider>"
+	if providerID != "" {
+		loginAction = fmt.Sprintf("Run: orbit login %s", providerID)
+	}
+
 	switch {
-	case strings.Contains(strings.ToLower(msg), "not logged in"), strings.Contains(strings.ToLower(msg), "authentication"):
-		return &Hint{Code: "auth.required", Message: "Provider authentication required", Action: "Run: orbit login <provider>"}
-	case strings.Contains(strings.ToLower(msg), "not found"), strings.Contains(strings.ToLower(msg), "enoent"):
+	case strings.Contains(lower, "not logged in"), strings.Contains(lower, "authentication"), strings.Contains(lower, "not authenticated"):
+		return &Hint{Code: "auth.required", Message: "Provider authentication required", Action: loginAction}
+	case strings.Contains(lower, "not found"), strings.Contains(lower, "enoent"):
 		return &Hint{Code: "cli.missing", Message: "Required CLI not found on PATH", Action: "Install the provider CLI and re-run orbit doctor"}
+	case strings.Contains(lower, "secret"):
+		return &Hint{Code: "secrets.missing", Message: msg, Action: "Set worker secrets: wrangler secret put <NAME>"}
 	default:
 		return &Hint{Code: "deploy.failed", Message: msg}
 	}
+}
+
+func providerFromStepID(stepID string) string {
+	if strings.HasPrefix(stepID, "wire-") {
+		return "vercel"
+	}
+	if i := strings.Index(stepID, "-"); i > 0 {
+		return stepID[:i]
+	}
+	return ""
 }

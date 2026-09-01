@@ -40,9 +40,11 @@ When both Cloudflare and Vercel are in the stack, `orbit deploy` automatically w
 | `orbit deploy` | Deploy all detected providers (API first, then docs) |
 | `orbit deploy --provider cloudflare` | Deploy a single provider |
 | `orbit retry` | Resume from last failed deploy step |
-| `orbit status` | Project config + last run |
-| `orbit open` | Open last deploy URL in browser |
+| `orbit open` | Open last deploy URL (`--target api`, `docs`, or `any`) |
+| `orbit status` | Project config, auth, last run, suggested next steps |
 | `orbit wire` | Set `VITE_API_URL` on Vercel from last Workers deploy |
+| `orbit secrets` | Check Worker secrets from wrangler.toml comments |
+| `orbit secrets --put NAME` | Set a secret via wrangler |
 | `orbit doctor` | Tool + provider health checks |
 | `orbit logs` | View last run logs |
 
