@@ -280,6 +280,12 @@ func init() {
 		CreateURL:   "https://vercel.com/account/settings/tokens",
 		DocsURL:     "https://vercel.com/docs/rest-api#creating-an-access-token",
 		Permissions: "Full Account or scoped access to the target project (deploy + env vars)",
+		OAuthSteps: []string{
+			"Orbit runs vercel login — your browser opens to Vercel",
+			"Sign in or confirm your Vercel account",
+			"Approve access when prompted",
+			"Return to this terminal — Orbit verifies with vercel whoami",
+		},
 		Steps: []string{
 			"Click \"Create\" on the Tokens page",
 			"Choose a scope that includes your docs project (or Full Account for simplicity)",

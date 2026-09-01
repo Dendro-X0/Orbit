@@ -14,7 +14,7 @@ func TestAuthGuidesRegistered(t *testing.T) {
 		if !ok {
 			t.Fatalf("missing auth guide for %s", id)
 		}
-		if guide.CreateURL == "" || len(guide.Steps) == 0 {
+		if guide.CreateURL == "" || len(guide.Steps) == 0 || len(guide.OAuthSteps) == 0 {
 			t.Fatalf("incomplete guide for %s: %+v", id, guide)
 		}
 	}

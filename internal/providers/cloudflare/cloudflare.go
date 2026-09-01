@@ -238,6 +238,12 @@ func init() {
 		CreateURL:   "https://dash.cloudflare.com/profile/api-tokens",
 		DocsURL:     "https://developers.cloudflare.com/fundamentals/api/get-started/create-token/",
 		Permissions: "Workers Scripts (edit), Workers KV (edit), D1 (edit), Account Settings (read)",
+		OAuthSteps: []string{
+			"Orbit runs wrangler login — your browser opens to Cloudflare",
+			"Sign in to Cloudflare if you are not already",
+			"On the Wrangler screen, review permissions and click Authorize",
+			"Return to this terminal — Orbit verifies with wrangler whoami",
+		},
 		Steps: []string{
 			"Click \"Create Token\" on the API Tokens page",
 			"Use the \"Edit Cloudflare Workers\" template, or create a custom token with Workers + D1 permissions",

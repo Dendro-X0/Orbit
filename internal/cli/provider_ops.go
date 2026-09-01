@@ -34,6 +34,10 @@ func configureOne(
 
 	printConfigureResult(res)
 
+	if !res.OK && configureNeedsAuth(res) {
+		return offerLoginAndRetryConfigure(ctx, root, st, provID, targetID, environment)
+	}
+
 	if res.OK && !dryRun {
 		st.SetProvider(provID, targetID, true)
 		if environment != "" {

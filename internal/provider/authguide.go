@@ -1,7 +1,7 @@
 package provider
 
-// AuthGuide documents how to manually obtain an API token for a provider.
-// Orbit cannot automate provider OAuth; it guides users to the right page instead.
+// AuthGuide documents how to authenticate with a provider.
+// OAuthSteps describe the browser flow; Steps/CreateURL are for manual API tokens (--guide).
 type AuthGuide struct {
 	ProviderID  string
 	TokenLabel  string
@@ -9,6 +9,7 @@ type AuthGuide struct {
 	DocsURL     string
 	Permissions string
 	Steps       []string
+	OAuthSteps  []string
 }
 
 var authGuides = map[string]AuthGuide{}

@@ -13,6 +13,7 @@ import (
 func newLoginCmd() *cobra.Command {
 	var tokenFlag string
 	var guideFlag bool
+	var allFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "login [provider]",
@@ -23,6 +24,43 @@ By default, orbit login opens the provider's browser OAuth (wrangler login, verc
 Use --guide for manual API token setup, or --token for scripting.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			root, err := projectRoot(cmd)
+			if err != nil {
+				return err
+			}
+
+			if allFlag && len(args) == 0 {
+				ids := detectStack(cmd.Context(), root)
+				if len(ids) == 0 {
+					for _, p := range provider.All() {
+						ids = append(ids, p.ID())
+					}
+				}
+				if len(ids) == 0 {
+					return fmt.Errorf("no providers to log in to")
+				}
+				for _, id := range ids {
+					p, err := provider.Get(id)
+					if err != nil {
+						return err
+					}
+					who, _ := p.WhoAmI(cmd.Context())
+					if who.LoggedIn {
+						fmt.Printf("✓ %s already logged in", p.DisplayName())
+						if who.Account != "" {
+							fmt.Printf(" (%s)", who.Account)
+						}
+						fmt.Println()
+						continue
+					}
+					if err := loginProvider(cmd, id, tokenFlag, guideFlag); err != nil {
+						return err
+					}
+					fmt.Println()
+				}
+				return nil
+			}
+
 			id := ""
 			if len(args) > 0 {
 				id = args[0]
@@ -46,41 +84,46 @@ Use --guide for manual API token setup, or --token for scripting.`,
 				}
 			}
 
-			p, err := provider.Get(id)
-			if err != nil {
-				return err
-			}
-
-			token, err := readLoginToken(tokenFlag)
-			if err != nil {
-				return err
-			}
-			if token != "" {
-				return storeAndVerifyToken(cmd.Context(), id, p, token)
-			}
-
-			if guideFlag {
-				if !isInteractive() {
-					return fmt.Errorf("token guide requires an interactive terminal")
-				}
-				return runTokenLoginWizard(cmd.Context(), id)
-			}
-
-			if isInteractive() {
-				return runOAuthLogin(cmd.Context(), p)
-			}
-
-			if _, ok := provider.AuthGuideFor(id); ok {
-				guide, _ := provider.AuthGuideFor(id)
-				return fmt.Errorf("not logged in — run interactively: orbit login %s\n  or visit: %s", id, guide.CreateURL)
-			}
-			return fmt.Errorf("not logged in — run: orbit login %s --token <token>", id)
+			return loginProvider(cmd, id, tokenFlag, guideFlag)
 		},
 	}
 
 	cmd.Flags().StringVar(&tokenFlag, "token", "", "API token (use - to read from stdin)")
 	cmd.Flags().BoolVar(&guideFlag, "guide", false, "manual API token wizard (opens token page, paste to keychain)")
+	cmd.Flags().BoolVar(&allFlag, "all", false, "log in to all detected providers (or all registered if none detected)")
 	return cmd
+}
+
+func loginProvider(cmd *cobra.Command, id, tokenFlag string, guideFlag bool) error {
+	p, err := provider.Get(id)
+	if err != nil {
+		return err
+	}
+
+	token, err := readLoginToken(tokenFlag)
+	if err != nil {
+		return err
+	}
+	if token != "" {
+		return storeAndVerifyToken(cmd.Context(), id, p, token)
+	}
+
+	if guideFlag {
+		if !isInteractive() {
+			return fmt.Errorf("token guide requires an interactive terminal")
+		}
+		return runTokenLoginWizard(cmd.Context(), id)
+	}
+
+	if isInteractive() {
+		return runOAuthLoginWizard(cmd.Context(), id, p)
+	}
+
+	if _, ok := provider.AuthGuideFor(id); ok {
+		guide, _ := provider.AuthGuideFor(id)
+		return fmt.Errorf("not logged in — run interactively: orbit login %s\n  or visit: %s", id, guide.CreateURL)
+	}
+	return fmt.Errorf("not logged in — run: orbit login %s --token <token>", id)
 }
 
 func storeAndVerifyToken(ctx context.Context, id string, p provider.Provider, token string) error {

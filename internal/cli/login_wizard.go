@@ -11,6 +11,60 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
+func runOAuthLoginWizard(ctx context.Context, id string, p provider.Provider) error {
+	guide, hasGuide := provider.AuthGuideFor(id)
+
+	fmt.Printf("\n%s — browser login\n", p.DisplayName())
+	fmt.Println()
+	fmt.Println("Orbit opens the provider's official OAuth flow in your browser.")
+	fmt.Println("Complete authorization there, then return to this terminal.")
+	fmt.Println()
+
+	if hasGuide && len(guide.OAuthSteps) > 0 {
+		for i, step := range guide.OAuthSteps {
+			fmt.Printf("  %d. %s\n", i+1, step)
+		}
+		fmt.Println()
+	} else {
+		fmt.Println("  1. Your browser will open")
+		fmt.Println("  2. Sign in and authorize the provider CLI")
+		fmt.Println("  3. Return here when finished")
+		fmt.Println()
+	}
+
+	if hasGuide && guide.DocsURL != "" {
+		fmt.Printf("Docs: %s\n", guide.DocsURL)
+	}
+
+	start := true
+	if isInteractive() {
+		if err := huh.NewConfirm().
+			Title("Open browser login?").
+			Description(fmt.Sprintf("Starts %s via the official CLI.", p.DisplayName())).
+			Value(&start).
+			Run(); err != nil {
+			return err
+		}
+	}
+	if !start {
+		return fmt.Errorf("login cancelled")
+	}
+
+	fmt.Println()
+	if err := runOAuthLogin(ctx, p); err != nil {
+		return err
+	}
+
+	who, err := p.WhoAmI(ctx)
+	if err != nil {
+		return err
+	}
+	if !who.LoggedIn {
+		return fmt.Errorf("login incomplete: %s", who.Message)
+	}
+	return nil
+}
+
 func runTokenLoginWizard(ctx context.Context, id string) error {
 	guide, ok := provider.AuthGuideFor(id)
 	if !ok {

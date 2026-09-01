@@ -41,6 +41,18 @@ func newDoctorCmd() *cobra.Command {
 						fmt.Printf("    fix: %s\n", c.Fix)
 					}
 				}
+				if authCheck, aok := providerAuthCheck(cmd.Context(), p); authCheck != nil {
+					mark := "✗"
+					if aok {
+						mark = "✓"
+					} else {
+						ok = false
+					}
+					fmt.Printf("  %s %s — %s\n", mark, authCheck.Name, authCheck.Message)
+					if !aok && authCheck.Fix != "" {
+						fmt.Printf("    fix: %s\n", authCheck.Fix)
+					}
+				}
 			}
 
 			root, _ := projectRoot(cmd)

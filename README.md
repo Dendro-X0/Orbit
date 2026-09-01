@@ -15,7 +15,7 @@ go install ./cmd/orbit
 ```bash
 cd your-project
 orbit doctor
-orbit login cloudflare    # opens provider OAuth in browser
+orbit login --all       # guided OAuth for each provider
 orbit configure           # interactive wizard
 orbit deploy
 orbit logs
@@ -30,7 +30,8 @@ When both Cloudflare and Vercel are in the stack, `orbit deploy` automatically w
 | Command | Purpose |
 |---------|---------|
 | `orbit` | Interactive menu |
-| `orbit login [provider]` | Provider OAuth via official CLI (portal) |
+| `orbit login [provider]` | Provider OAuth via official CLI (guided browser flow) |
+| `orbit login --all` | Log in to all detected providers in sequence |
 | `orbit login --guide` | Manual API token wizard (CI / headless fallback) |
 | `orbit login --token <token>` | Store token directly (scripting) |
 | `orbit logout [provider]` | Remove stored API tokens |

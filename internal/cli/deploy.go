@@ -36,6 +36,10 @@ func newDeployCmd() *cobra.Command {
 				deployEnv = st.Environment
 			}
 
+			if err := ensureProvidersLoggedIn(cmd.Context(), ids, isInteractive()); err != nil {
+				return err
+			}
+
 			st, err = ensureConfigured(cmd.Context(), root, st, ids, deployEnv)
 			if err != nil {
 				return err

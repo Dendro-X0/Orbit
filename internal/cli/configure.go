@@ -72,6 +72,12 @@ func newConfigureCmd() *cobra.Command {
 				fmt.Printf("Configuring stack: %s\n\n", providerListLabel(configureIDs))
 			}
 
+			if !dryRun {
+				if err := ensureProvidersLoggedIn(cmd.Context(), configureIDs, isInteractive() && !yes); err != nil {
+					return err
+				}
+			}
+
 			st, err = configureStack(cmd.Context(), root, configureIDs, st, targets, environment, dryRun)
 			if err != nil {
 				return err
