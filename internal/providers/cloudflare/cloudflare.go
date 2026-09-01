@@ -3,7 +3,6 @@ package cloudflare
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -43,43 +42,92 @@ func (p *Provider) Detect(ctx context.Context, root string) (provider.Detection,
 	}, nil
 }
 
-func (p *Provider) Configure(ctx context.Context, root string, opts provider.ConfigureOptions) (provider.ConfigureResult, error) {
-	_ = ctx
-	det, err := p.Detect(ctx, root)
+func (p *Provider) target(root, targetID string) (provider.Target, error) {
+	det, err := p.Detect(context.Background(), root)
 	if err != nil {
-		return provider.ConfigureResult{}, err
+		return provider.Target{}, err
 	}
 	if !det.Supported {
-		return provider.ConfigureResult{OK: false, Message: "No Cloudflare project detected"}, nil
+		return provider.Target{}, fmt.Errorf("no Cloudflare project detected")
+	}
+	if targetID == "" {
+		return det.Targets[0], nil
+	}
+	for _, t := range det.Targets {
+		if t.ID == targetID {
+			return t, nil
+		}
+	}
+	return provider.Target{}, fmt.Errorf("unknown target %q", targetID)
+}
+
+func (p *Provider) Configure(ctx context.Context, root string, opts provider.ConfigureOptions) (provider.ConfigureResult, error) {
+	target, err := p.target(root, opts.TargetID)
+	if err != nil {
+		return provider.ConfigureResult{OK: false, Message: err.Error()}, nil
 	}
 
-	target := det.Targets[0]
-	wranglerPath := filepath.Join(root, target.Path, "wrangler.toml")
-	content, err := os.ReadFile(wranglerPath)
+	path := wranglerPath(root, target.Path)
+	cfg, err := readD1Config(path)
 	if err != nil {
 		return provider.ConfigureResult{}, err
 	}
 
-	if strings.Contains(string(content), "REPLACE_AFTER_CREATE") {
-		if opts.DryRun {
-			return provider.ConfigureResult{
-				OK:      true,
-				Message: "Would create D1 database and update wrangler.toml",
-				Changed: []string{filepath.ToSlash(filepath.Join(target.Path, "wrangler.toml"))},
-			}, nil
-		}
+	if !needsD1Link(cfg.DatabaseID) {
+		return provider.ConfigureResult{OK: true, Message: "Cloudflare project already configured"}, nil
+	}
+
+	relPath := filepath.ToSlash(filepath.Join(target.Path, "wrangler.toml"))
+	if opts.DryRun {
 		return provider.ConfigureResult{
 			OK:      true,
-			Message: "D1 database not linked yet",
+			Message: fmt.Sprintf("Would create D1 database %q and update %s", cfg.DatabaseName, relPath),
+			Changed: []string{relPath},
+		}, nil
+	}
+
+	who, err := p.WhoAmI(ctx)
+	if err != nil {
+		return provider.ConfigureResult{}, err
+	}
+	if !who.LoggedIn {
+		return provider.ConfigureResult{
+			OK:      false,
+			Message: "Not logged in to Cloudflare",
 			Hints: []provider.Hint{{
-				Code:    "cloudflare.d1.unlinked",
-				Message: "database_id is still REPLACE_AFTER_CREATE",
-				Action:  "wrangler d1 create <name> then set database_id in wrangler.toml",
+				Code:    "auth.required",
+				Message: who.Message,
+				Action:  "orbit login cloudflare",
 			}},
 		}, nil
 	}
 
-	return provider.ConfigureResult{OK: true, Message: "Cloudflare project already configured"}, nil
+	workDir := filepath.Join(root, target.Path)
+	out, err := run.Capture(ctx, "wrangler", []string{"d1", "create", cfg.DatabaseName}, workDir)
+	if err != nil {
+		return provider.ConfigureResult{
+			OK:      false,
+			Message: "D1 create failed",
+			Hints: []provider.Hint{{
+				Code:    "cloudflare.d1.create_failed",
+				Message: err.Error(),
+			}},
+		}, nil
+	}
+
+	databaseID, err := parseDatabaseIDFromCreateOutput(out)
+	if err != nil {
+		return provider.ConfigureResult{}, err
+	}
+	if err := patchDatabaseID(path, databaseID); err != nil {
+		return provider.ConfigureResult{}, err
+	}
+
+	return provider.ConfigureResult{
+		OK:      true,
+		Message: fmt.Sprintf("Linked D1 database %s", cfg.DatabaseName),
+		Changed: []string{relPath},
+	}, nil
 }
 
 func (p *Provider) Deploy(ctx context.Context, root string, opts provider.DeployOptions) (provider.DeployResult, error) {
@@ -90,22 +138,19 @@ func (p *Provider) Deploy(ctx context.Context, root string, opts provider.Deploy
 }
 
 func (p *Provider) Phases(root string, opts provider.DeployOptions) []run.Step {
-	det, _ := p.Detect(context.Background(), root)
-	targetPath := "."
-	if len(det.Targets) > 0 {
-		targetPath = det.Targets[0].Path
+	target, err := p.target(root, opts.TargetID)
+	if err != nil {
+		return nil
 	}
-	if opts.TargetID != "" {
-		for _, t := range det.Targets {
-			if t.ID == opts.TargetID {
-				targetPath = t.Path
-				break
-			}
-		}
-	}
-	workDir := filepath.Join(root, targetPath)
+	workDir := filepath.Join(root, target.Path)
 
-	return []run.Step{
+	cfg, _ := readD1Config(wranglerPath(root, target.Path))
+	migrateArgs := []string{"d1", "migrations", "apply", cfg.DatabaseName, "--remote"}
+	if opts.Environment == "preview" {
+		migrateArgs = []string{"d1", "migrations", "apply", cfg.DatabaseName, "--local"}
+	}
+
+	steps := []run.Step{
 		{
 			ID:    "whoami",
 			Title: "Verify Cloudflare authentication",
@@ -113,14 +158,27 @@ func (p *Provider) Phases(root string, opts provider.DeployOptions) []run.Step {
 				return run.RunCommand(ctx, log, run.CmdOptions{Name: "wrangler", Args: []string{"whoami"}, Dir: workDir})
 			},
 		},
-		{
-			ID:    "deploy",
-			Title: "Deploy Worker",
-			Run: func(ctx context.Context, log *run.StepLogger) error {
-				return run.RunCommand(ctx, log, run.CmdOptions{Name: "wrangler", Args: []string{"deploy"}, Dir: workDir})
-			},
-		},
 	}
+
+	if cfg.DatabaseName != "" {
+		steps = append(steps, run.Step{
+			ID:    "migrate",
+			Title: "Apply D1 migrations",
+			Run: func(ctx context.Context, log *run.StepLogger) error {
+				return run.RunCommand(ctx, log, run.CmdOptions{Name: "wrangler", Args: migrateArgs, Dir: workDir})
+			},
+		})
+	}
+
+	steps = append(steps, run.Step{
+		ID:    "deploy",
+		Title: "Deploy Worker",
+		Run: func(ctx context.Context, log *run.StepLogger) error {
+			return run.RunCommand(ctx, log, run.CmdOptions{Name: "wrangler", Args: []string{"deploy"}, Dir: workDir})
+		},
+	})
+
+	return steps
 }
 
 func (p *Provider) Login(ctx context.Context) (provider.LoginResult, error) {

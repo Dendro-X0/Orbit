@@ -49,13 +49,19 @@ func newDeployCmd() *cobra.Command {
 				fmt.Println("Project not configured — running configure first…")
 				configure := newConfigureCmd()
 				configure.SetContext(cmd.Context())
-				if err := configure.RunE(cmd, nil); err != nil {
+				if err := configure.RunE(cmd, []string{}); err != nil {
 					return err
 				}
+				st, _ = state.Load(statePath(root))
 			}
 
-			steps := pp.Phases(root, provider.DeployOptions{Environment: env, TargetID: st.TargetID})
-			fmt.Printf("orbit deploy — %s (%s)\n\n", p.DisplayName(), env)
+			deployEnv := env
+			if deployEnv == "production" && st.Environment != "" {
+				deployEnv = st.Environment
+			}
+
+			steps := pp.Phases(root, provider.DeployOptions{Environment: deployEnv, TargetID: st.TargetID})
+			fmt.Printf("orbit deploy — %s (%s)\n\n", p.DisplayName(), deployEnv)
 
 			r := &run.Runner{}
 			result, err := r.Execute(cmd.Context(), run.Options{

@@ -18,6 +18,13 @@ func newLoginCmd() *cobra.Command {
 			if len(args) > 0 {
 				id = args[0]
 			}
+			if id == "" && isInteractive() {
+				var err error
+				id, err = runLoginWizard()
+				if err != nil {
+					return err
+				}
+			}
 			if id == "" {
 				ids := provider.IDs()
 				if len(ids) == 0 {

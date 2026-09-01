@@ -18,10 +18,12 @@ go install ./cmd/orbit
 cd your-project
 orbit doctor
 orbit login cloudflare
-orbit configure
+orbit configure    # interactive wizard
 orbit deploy
 orbit logs
 ```
+
+Use `orbit` with no arguments for an interactive menu (TTY required).
 
 ## Commands
 

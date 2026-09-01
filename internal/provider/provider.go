@@ -39,6 +39,7 @@ type Target struct {
 
 type ConfigureOptions struct {
 	Environment string
+	TargetID    string
 	DryRun      bool
 }
 
