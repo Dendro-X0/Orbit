@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Dendro-X0/Orbit/internal/credentials"
 	"github.com/Dendro-X0/Orbit/internal/provider"
 	"github.com/Dendro-X0/Orbit/internal/run"
 )
@@ -103,7 +104,7 @@ func (p *Provider) Configure(ctx context.Context, root string, opts provider.Con
 	}
 
 	workDir := filepath.Join(root, target.Path)
-	out, err := run.Capture(ctx, "wrangler", []string{"d1", "create", cfg.DatabaseName}, workDir)
+	out, err := run.Capture(ctx, "wrangler", []string{"d1", "create", cfg.DatabaseName}, workDir, p.cmdEnv()...)
 	if err != nil {
 		return provider.ConfigureResult{
 			OK:      false,
@@ -155,7 +156,7 @@ func (p *Provider) Phases(root string, opts provider.DeployOptions) []run.Step {
 			ID:    "whoami",
 			Title: "Verify Cloudflare authentication",
 			Run: func(ctx context.Context, log *run.StepLogger) error {
-				return run.RunCommand(ctx, log, run.CmdOptions{Name: "wrangler", Args: []string{"whoami"}, Dir: workDir})
+				return run.RunCommand(ctx, log, run.CmdOptions{Name: "wrangler", Args: []string{"whoami"}, Dir: workDir, Env: p.cmdEnv()})
 			},
 		},
 	}
@@ -165,7 +166,7 @@ func (p *Provider) Phases(root string, opts provider.DeployOptions) []run.Step {
 			ID:    "migrate",
 			Title: "Apply D1 migrations",
 			Run: func(ctx context.Context, log *run.StepLogger) error {
-				return run.RunCommand(ctx, log, run.CmdOptions{Name: "wrangler", Args: migrateArgs, Dir: workDir})
+				return run.RunCommand(ctx, log, run.CmdOptions{Name: "wrangler", Args: migrateArgs, Dir: workDir, Env: p.cmdEnv()})
 			},
 		})
 	}
@@ -174,7 +175,7 @@ func (p *Provider) Phases(root string, opts provider.DeployOptions) []run.Step {
 		ID:    "deploy",
 		Title: "Deploy Worker",
 		Run: func(ctx context.Context, log *run.StepLogger) error {
-			return run.RunCommand(ctx, log, run.CmdOptions{Name: "wrangler", Args: []string{"deploy"}, Dir: workDir})
+			return run.RunCommand(ctx, log, run.CmdOptions{Name: "wrangler", Args: []string{"deploy"}, Dir: workDir, Env: p.cmdEnv()})
 		},
 	})
 
@@ -197,7 +198,7 @@ func (p *Provider) WhoAmI(ctx context.Context) (provider.WhoAmIResult, error) {
 	if _, err := run.LookPath("wrangler"); err != nil {
 		return provider.WhoAmIResult{LoggedIn: false, Message: "wrangler not installed"}, nil
 	}
-	out, err := run.Capture(ctx, "wrangler", []string{"whoami"}, "")
+	out, err := run.Capture(ctx, "wrangler", []string{"whoami"}, "", p.cmdEnv()...)
 	if err != nil {
 		return provider.WhoAmIResult{LoggedIn: false, Message: err.Error()}, nil
 	}
@@ -214,7 +215,19 @@ func (p *Provider) Doctor(ctx context.Context) ([]provider.Check, error) {
 		checks[0].Message = "found on PATH"
 		checks[0].Fix = ""
 	}
+	if credentials.Has(ID) {
+		checks = append(checks, provider.Check{
+			Name:    "API token",
+			OK:      true,
+			Message: "stored in OS keychain",
+		})
+	}
 	return checks, nil
+}
+
+func (p *Provider) cmdEnv() []string {
+	env, _ := credentials.Env(ID)
+	return env
 }
 
 func init() {

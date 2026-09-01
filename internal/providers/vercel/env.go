@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Dendro-X0/Orbit/internal/credentials"
 	"github.com/Dendro-X0/Orbit/internal/run"
 )
 
@@ -27,13 +28,17 @@ func SetEnvVar(ctx context.Context, workDir, key, value, environment string, log
 		return fmt.Errorf("vercel not installed")
 	}
 
-	_, _ = run.Capture(ctx, "vercel", []string{"env", "rm", key, environment, "--yes"}, workDir)
+	env, _ := credentials.Env(ID)
+	_, _ = run.Capture(ctx, "vercel", []string{"env", "rm", key, environment, "--yes"}, workDir, env...)
 
 	cmd := exec.CommandContext(ctx, "vercel", "env", "add", key, environment)
 	cmd.Dir = workDir
 	cmd.Stdin = strings.NewReader(value + "\n")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	if len(env) > 0 {
+		cmd.Env = append(os.Environ(), env...)
+	}
 
 	if log != nil {
 		log.Stdout(fmt.Sprintf("Setting %s=%s for %s", key, value, environment))

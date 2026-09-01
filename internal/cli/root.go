@@ -22,6 +22,7 @@ func NewRoot() *cobra.Command {
 	cmd.PersistentFlags().StringVar(&rootDir, "path", "", "project root (default: auto-detect)")
 
 	cmd.AddCommand(newLoginCmd())
+	cmd.AddCommand(newLogoutCmd())
 	cmd.AddCommand(newWhoamiCmd())
 	cmd.AddCommand(newConfigureCmd())
 	cmd.AddCommand(newDeployCmd())

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Dendro-X0/Orbit/internal/credentials"
 	"github.com/Dendro-X0/Orbit/internal/provider"
 	"github.com/Dendro-X0/Orbit/internal/run"
 )
@@ -78,7 +79,7 @@ func (p *Provider) Configure(ctx context.Context, root string, opts provider.Con
 	missing := []string{}
 
 	if linked && len(required) > 0 {
-		envOut, err := run.Capture(ctx, "vercel", []string{"env", "ls"}, workDir)
+		envOut, err := run.Capture(ctx, "vercel", []string{"env", "ls"}, workDir, p.cmdEnv()...)
 		if err == nil {
 			present := parseEnvList(envOut)
 			for _, key := range required {
@@ -142,7 +143,7 @@ func (p *Provider) Configure(ctx context.Context, root string, opts provider.Con
 
 	changed := []string{}
 	if !linked {
-		if err := run.RunInteractive(ctx, "vercel", []string{"link", "--yes"}, workDir); err != nil {
+		if err := run.RunInteractive(ctx, "vercel", []string{"link", "--yes"}, workDir, p.cmdEnv()...); err != nil {
 			return provider.ConfigureResult{
 				OK:      false,
 				Message: "Vercel link failed",
@@ -207,14 +208,14 @@ func (p *Provider) Phases(root string, opts provider.DeployOptions) []run.Step {
 			ID:    "whoami",
 			Title: "Verify Vercel authentication",
 			Run: func(ctx context.Context, log *run.StepLogger) error {
-				return run.RunCommand(ctx, log, run.CmdOptions{Name: "vercel", Args: []string{"whoami"}, Dir: workDir})
+				return run.RunCommand(ctx, log, run.CmdOptions{Name: "vercel", Args: []string{"whoami"}, Dir: workDir, Env: p.cmdEnv()})
 			},
 		},
 		{
 			ID:    "deploy",
 			Title: title,
 			Run: func(ctx context.Context, log *run.StepLogger) error {
-				return run.RunCommand(ctx, log, run.CmdOptions{Name: "vercel", Args: deployArgs, Dir: workDir})
+				return run.RunCommand(ctx, log, run.CmdOptions{Name: "vercel", Args: deployArgs, Dir: workDir, Env: p.cmdEnv()})
 			},
 		},
 	}
@@ -235,7 +236,7 @@ func (p *Provider) WhoAmI(ctx context.Context) (provider.WhoAmIResult, error) {
 	if _, err := run.LookPath("vercel"); err != nil {
 		return provider.WhoAmIResult{LoggedIn: false, Message: "vercel not installed"}, nil
 	}
-	out, err := run.Capture(ctx, "vercel", []string{"whoami"}, "")
+	out, err := run.Capture(ctx, "vercel", []string{"whoami"}, "", p.cmdEnv()...)
 	if err != nil {
 		return provider.WhoAmIResult{LoggedIn: false, Message: err.Error()}, nil
 	}
@@ -256,7 +257,19 @@ func (p *Provider) Doctor(ctx context.Context) ([]provider.Check, error) {
 		checks[0].Message = "found on PATH"
 		checks[0].Fix = ""
 	}
+	if credentials.Has(ID) {
+		checks = append(checks, provider.Check{
+			Name:    "API token",
+			OK:      true,
+			Message: "stored in OS keychain",
+		})
+	}
 	return checks, nil
+}
+
+func (p *Provider) cmdEnv() []string {
+	env, _ := credentials.Env(ID)
+	return env
 }
 
 func init() {

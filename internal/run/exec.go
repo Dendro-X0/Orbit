@@ -86,12 +86,15 @@ func FindFile(root string, parts ...string) string {
 }
 
 // RunInteractive runs a command attached to the user's terminal (for login flows).
-func RunInteractive(ctx context.Context, name string, args []string, dir string) error {
+func RunInteractive(ctx context.Context, name string, args []string, dir string, extraEnv ...string) error {
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	if len(extraEnv) > 0 {
+		cmd.Env = append(os.Environ(), extraEnv...)
+	}
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("%s %s: %w", name, strings.Join(args, " "), err)
 	}
@@ -99,9 +102,12 @@ func RunInteractive(ctx context.Context, name string, args []string, dir string)
 }
 
 // Capture runs a command and returns combined stdout.
-func Capture(ctx context.Context, name string, args []string, dir string) (string, error) {
+func Capture(ctx context.Context, name string, args []string, dir string, extraEnv ...string) (string, error) {
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
+	if len(extraEnv) > 0 {
+		cmd.Env = append(os.Environ(), extraEnv...)
+	}
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("%s: %w: %s", name, err, strings.TrimSpace(string(out)))

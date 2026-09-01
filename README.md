@@ -33,6 +33,8 @@ When both Cloudflare and Vercel are in the stack, `orbit deploy` automatically w
 |---------|---------|
 | `orbit` | Interactive menu |
 | `orbit login [provider]` | Authenticate (`cloudflare`, `vercel`, …) |
+| `orbit login --token <token>` | Store an API token in the OS keychain |
+| `orbit logout [provider]` | Remove stored API tokens |
 | `orbit whoami` | Show connected accounts |
 | `orbit configure --all` | Configure every detected provider |
 | `orbit deploy` | Deploy all detected providers (API first, then docs) |
