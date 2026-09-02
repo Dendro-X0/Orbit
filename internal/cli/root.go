@@ -16,11 +16,13 @@ func NewRoot() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "orbit",
 		Short: "Deploy to your cloud — login, configure, deploy",
-		RunE:  runMenu,
+		RunE:  runDefault,
 	}
 
 	cmd.PersistentFlags().StringVar(&rootDir, "path", "", "project root (default: auto-detect)")
 
+	cmd.AddCommand(newShipCmd())
+	cmd.AddCommand(newMenuCmd())
 	cmd.AddCommand(newLoginCmd())
 	cmd.AddCommand(newLogoutCmd())
 	cmd.AddCommand(newWhoamiCmd())
@@ -38,38 +40,18 @@ func NewRoot() *cobra.Command {
 	return cmd
 }
 
-func runMenu(cmd *cobra.Command, _ []string) error {
+func runDefault(cmd *cobra.Command, _ []string) error {
 	if isInteractive() {
-		for {
-			action, err := runMainMenu()
-			if err != nil {
-				return err
-			}
-			if action == "quit" {
-				return nil
-			}
-			if err := runMenuAction(cmd, action); err != nil {
-				fmt.Fprintf(os.Stderr, "✗ %v\n", err)
-			}
-			fmt.Println()
-		}
+		return runShipWorkflow(cmd)
 	}
-
-	fmt.Println("orbit — deploy to your cloud, simply.")
-	fmt.Println()
-	fmt.Println("  [1] Deploy this project     orbit deploy")
-	fmt.Println("  [2] Configure project       orbit configure")
-	fmt.Println("  [3] Log in to a provider    orbit login")
-	fmt.Println("  [4] Check setup             orbit doctor")
-	fmt.Println("  [5] Project status          orbit status")
-	fmt.Println("  [6] View last run logs      orbit logs")
-	fmt.Println()
-	fmt.Println("Run `orbit <command> --help` for details.")
+	printNonInteractiveHelp()
 	return nil
 }
 
 func runMenuAction(cmd *cobra.Command, action string) error {
 	switch action {
+	case "ship":
+		return runShipWorkflow(cmd)
 	case "deploy":
 		return newDeployCmd().RunE(cmd, nil)
 	case "configure":

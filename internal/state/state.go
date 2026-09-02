@@ -12,10 +12,18 @@ type ProviderConfig struct {
 	Configured bool   `json:"configured"`
 }
 
+// ShipScope is the last deploy intent chosen in orbit ship.
+type ShipScope struct {
+	IntentID  string   `json:"intentId,omitempty"`
+	Label     string   `json:"label,omitempty"`
+	Providers []string `json:"providers,omitempty"`
+}
+
 // Project is persisted at .orbit/state.json.
 type Project struct {
 	Environment string                    `json:"environment,omitempty"`
 	Providers   map[string]ProviderConfig `json:"providers,omitempty"`
+	Ship        *ShipScope                `json:"ship,omitempty"`
 
 	// Legacy single-provider fields (migrated into Providers on load).
 	Provider   string `json:"provider,omitempty"`
@@ -99,4 +107,34 @@ func (p *Project) ConfiguredProviders() []string {
 		}
 	}
 	return out
+}
+
+func (p *Project) SetShipScope(intentID, label string, providers []string) {
+	p.Normalize()
+	if intentID == "" && len(providers) == 0 {
+		p.Ship = nil
+		return
+	}
+	copied := append([]string(nil), providers...)
+	p.Ship = &ShipScope{
+		IntentID:  intentID,
+		Label:     label,
+		Providers: copied,
+	}
+}
+
+func (p *Project) ShipProviders() []string {
+	p.Normalize()
+	if p.Ship == nil || len(p.Ship.Providers) == 0 {
+		return nil
+	}
+	return append([]string(nil), p.Ship.Providers...)
+}
+
+func (p *Project) ShipLabel() string {
+	p.Normalize()
+	if p.Ship == nil {
+		return ""
+	}
+	return p.Ship.Label
 }

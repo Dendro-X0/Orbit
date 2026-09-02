@@ -22,7 +22,7 @@ func configureOne(
 		return err
 	}
 
-	fmt.Printf("Configuring %s at %s\n\n", p.DisplayName(), root)
+	fmt.Printf("Configuring %s at %s\n\n", styledProvider(p.DisplayName()), styledPath(root))
 	res, err := p.Configure(ctx, root, provider.ConfigureOptions{
 		Environment: environment,
 		TargetID:    targetID,
@@ -93,33 +93,45 @@ func ensureConfigured(
 		return st, nil
 	}
 
-	fmt.Printf("Configuring %d provider(s) before deploy…\n\n", len(pending))
+	fmt.Printf("%s\n\n", ui.info.Render(fmt.Sprintf("Configuring %d provider(s) before deploy…", len(pending))))
 	return configureStack(ctx, root, pending, st, nil, env, false)
 }
 
 func printDeployResult(ctx context.Context, root string, st state.Project, label string, result *run.Result, err error) error {
 	if result != nil && result.Summary != nil {
-		fmt.Printf("\n✓ Deployed in %s\n", result.Summary.Duration)
+		fmt.Println()
+		printSuccess("Deployed in " + result.Summary.Duration)
+
+		secretsGap := stackContains(parseProviderIDs(label), "cloudflare") &&
+			cloudflareSecretsSummary(ctx, root, st) != ""
+		if secretsGap {
+			printWarning("Live with gaps — worker secrets still missing")
+		} else {
+			printSuccess("Live")
+		}
+
 		if result.Summary.APIURL != "" {
-			fmt.Printf("  API URL:  %s\n", result.Summary.APIURL)
+			printKV("API URL", result.Summary.APIURL)
 		}
 		if result.Summary.DocsURL != "" {
-			fmt.Printf("  Docs URL: %s\n", result.Summary.DocsURL)
+			printKV("Docs URL", result.Summary.DocsURL)
 		}
 		if result.Summary.APIURL != "" || result.Summary.DocsURL != "" {
-			fmt.Println("  Open:     orbit open --target api|docs")
+			printKV("Open", "orbit open --target api|docs")
 		}
-		fmt.Printf("  Logs:     %s\n", result.Summary.RunDir)
-		printSecretsReminder(ctx, root, st, label)
+		printKV("Logs", result.Summary.RunDir)
+
+		scope := parseProviderIDs(label)
+		printRecommendedNext(ctx, root, st, scope, result.Summary)
 	}
 	if result != nil && result.Failure != nil {
-		fmt.Fprintf(os.Stderr, "\n✗ Deploy failed at step %s\n", result.Failure.FailedStep)
-		fmt.Fprintf(os.Stderr, "  %s\n", result.Failure.Message)
+		fmt.Fprintf(os.Stderr, "\n%s %s\n", failMark(), ui.error.Render("Deploy failed at step "+result.Failure.FailedStep))
+		fmt.Fprintf(os.Stderr, "  %s %s\n", ui.label.Render("Error:"), ui.error.Render(result.Failure.Message))
 		if result.Failure.Hint != nil && result.Failure.Hint.Action != "" {
-			fmt.Fprintf(os.Stderr, "  action: %s\n", result.Failure.Hint.Action)
+			fmt.Fprintf(os.Stderr, "  %s %s\n", ui.label.Render("Action:"), highlightCmdLine(result.Failure.Hint.Action))
 		}
-		fmt.Fprintf(os.Stderr, "  retry: orbit retry\n")
-		fmt.Fprintf(os.Stderr, "  logs:  %s\n", result.Failure.LogPaths.Combined)
+		fmt.Fprintf(os.Stderr, "  %s %s\n", ui.label.Render("Retry:"), highlightCmdLine("orbit retry"))
+		fmt.Fprintf(os.Stderr, "  %s %s\n", ui.label.Render("Logs:"), styledPath(result.Failure.LogPaths.Combined))
 	}
 	return err
 }

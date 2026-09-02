@@ -149,7 +149,7 @@ func printSecretsReminder(ctx context.Context, root string, st state.Project, pr
 	if err != nil || len(missing) == 0 {
 		return
 	}
-	fmt.Printf("\nSecrets: %d missing on worker — run: orbit secrets\n", len(missing))
+	fmt.Printf("\n%s %s\n", ui.warn.Render("Secrets:"), ui.warn.Render(fmt.Sprintf("%d missing on worker — run: orbit secrets", len(missing))))
 }
 
 func cloudflareSecretsSummary(ctx context.Context, root string, st state.Project) string {

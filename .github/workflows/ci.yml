@@ -15,5 +15,16 @@ jobs:
           go-version: "1.25"
           cache: true
       - run: go mod download
-      - run: go build -o bin/orbit ./cmd/orbit
+      - name: Build and smoke test
+        run: |
+          VERSION=0.2.0
+          COMMIT=$(git rev-parse --short HEAD)
+          DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          go build -ldflags "-s -w \
+            -X github.com/Dendro-X0/Orbit/internal/cli.Version=${VERSION} \
+            -X github.com/Dendro-X0/Orbit/internal/cli.Commit=${COMMIT} \
+            -X github.com/Dendro-X0/Orbit/internal/cli.BuildDate=${DATE}" \
+            -o bin/orbit ./cmd/orbit
+          ./bin/orbit version | grep -q "orbit 0.2.0"
       - run: go test ./...
+      - run: go vet ./...

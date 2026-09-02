@@ -53,3 +53,27 @@ func TestNeedsD1Link(t *testing.T) {
 		t.Fatal("expected false")
 	}
 }
+
+func TestParseWhoAmIJSON(t *testing.T) {
+	out := `{"loggedIn":true,"email":"user@example.com","accounts":[{"name":"User Account"}]}`
+	loggedIn, account := parseWhoAmI(out)
+	if !loggedIn || account != "user@example.com" {
+		t.Fatalf("got loggedIn=%v account=%q", loggedIn, account)
+	}
+}
+
+func TestParseWhoAmINotLoggedIn(t *testing.T) {
+	out := `{"loggedIn":false}`
+	loggedIn, account := parseWhoAmI(out)
+	if loggedIn || account != "" {
+		t.Fatalf("got loggedIn=%v account=%q", loggedIn, account)
+	}
+}
+
+func TestParseWhoAmIPlainText(t *testing.T) {
+	out := "You are logged in with an OAuth Token, associated with the email user@example.com."
+	loggedIn, account := parseWhoAmI(out)
+	if !loggedIn || account != "user@example.com" {
+		t.Fatalf("got loggedIn=%v account=%q", loggedIn, account)
+	}
+}

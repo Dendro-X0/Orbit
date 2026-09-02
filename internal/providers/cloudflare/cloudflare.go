@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	"github.com/Dendro-X0/Orbit/internal/credentials"
 	"github.com/Dendro-X0/Orbit/internal/provider"
@@ -198,11 +197,19 @@ func (p *Provider) WhoAmI(ctx context.Context) (provider.WhoAmIResult, error) {
 	if _, err := run.LookPath("wrangler"); err != nil {
 		return provider.WhoAmIResult{LoggedIn: false, Message: "wrangler not installed"}, nil
 	}
-	out, err := run.Capture(ctx, "wrangler", []string{"whoami"}, "", p.cmdEnv()...)
+	out, err := run.Capture(ctx, "wrangler", []string{"whoami", "--json"}, "", p.cmdEnv()...)
 	if err != nil {
-		return provider.WhoAmIResult{LoggedIn: false, Message: err.Error()}, nil
+		// Fall back to plain whoami for older wrangler versions without --json.
+		out, err = run.Capture(ctx, "wrangler", []string{"whoami"}, "", p.cmdEnv()...)
+		if err != nil {
+			return provider.WhoAmIResult{LoggedIn: false, Message: err.Error()}, nil
+		}
 	}
-	return provider.WhoAmIResult{LoggedIn: true, Account: strings.TrimSpace(out), Message: "authenticated"}, nil
+	loggedIn, account := parseWhoAmI(out)
+	if !loggedIn {
+		return provider.WhoAmIResult{LoggedIn: false, Message: "not authenticated"}, nil
+	}
+	return provider.WhoAmIResult{LoggedIn: true, Account: account, Message: "authenticated"}, nil
 }
 
 func (p *Provider) Doctor(ctx context.Context) ([]provider.Check, error) {

@@ -25,3 +25,14 @@ func TestSetProvider(t *testing.T) {
 		t.Fatalf("state = %+v", p)
 	}
 }
+
+func TestSetShipScope(t *testing.T) {
+	var p Project
+	p.SetShipScope("api_backend", "API / backend — Cloudflare", []string{"cloudflare"})
+	if p.ShipLabel() != "API / backend — Cloudflare" {
+		t.Fatalf("label = %q", p.ShipLabel())
+	}
+	if len(p.ShipProviders()) != 1 || p.ShipProviders()[0] != "cloudflare" {
+		t.Fatalf("providers = %v", p.ShipProviders())
+	}
+}

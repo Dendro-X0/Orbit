@@ -14,14 +14,14 @@ func newDoctorCmd() *cobra.Command {
 		Use:   "doctor",
 		Short: "Check tool and provider health",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("orbit doctor")
+			printTitle("orbit doctor")
 			fmt.Println()
 
 			ok := true
 			if _, err := run.LookPath("git"); err != nil {
-				fmt.Println("✗ git not found (optional)")
+				fmt.Printf("%s %s\n", failMark(), ui.dim.Render("git not found (optional)"))
 			} else {
-				fmt.Println("✓ git")
+				printSuccess("git")
 			}
 
 			for _, p := range provider.All() {
@@ -29,29 +29,27 @@ func newDoctorCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				fmt.Printf("\n%s:\n", p.DisplayName())
+				fmt.Printf("\n%s\n", styledProvider(p.DisplayName())+ui.dim.Render(":"))
 				for _, c := range checks {
-					mark := "✗"
 					if c.OK {
-						mark = "✓"
+						fmt.Printf("  %s %s %s %s\n", okMark(), ui.label.Render(c.Name), ui.dim.Render("—"), ui.value.Render(c.Message))
 					} else {
 						ok = false
+						fmt.Printf("  %s %s %s %s\n", failMark(), ui.label.Render(c.Name), ui.dim.Render("—"), ui.error.Render(c.Message))
 					}
-					fmt.Printf("  %s %s — %s\n", mark, c.Name, c.Message)
 					if !c.OK && c.Fix != "" {
-						fmt.Printf("    fix: %s\n", c.Fix)
+						fmt.Printf("    %s %s\n", ui.label.Render("fix:"), highlightCmdLine(c.Fix))
 					}
 				}
 				if authCheck, aok := providerAuthCheck(cmd.Context(), p); authCheck != nil {
-					mark := "✗"
 					if aok {
-						mark = "✓"
+						fmt.Printf("  %s %s %s %s\n", okMark(), ui.label.Render(authCheck.Name), ui.dim.Render("—"), ui.value.Render(authCheck.Message))
 					} else {
 						ok = false
+						fmt.Printf("  %s %s %s %s\n", failMark(), ui.label.Render(authCheck.Name), ui.dim.Render("—"), ui.error.Render(authCheck.Message))
 					}
-					fmt.Printf("  %s %s — %s\n", mark, authCheck.Name, authCheck.Message)
 					if !aok && authCheck.Fix != "" {
-						fmt.Printf("    fix: %s\n", authCheck.Fix)
+						fmt.Printf("    %s %s\n", ui.label.Render("fix:"), highlightCmdLine(authCheck.Fix))
 					}
 				}
 			}
@@ -63,7 +61,7 @@ func newDoctorCmd() *cobra.Command {
 				stack := detectStack(cmd.Context(), root)
 				if len(stack) > 0 {
 					if msg := cloudflareSecretsSummary(cmd.Context(), root, st); msg != "" {
-						fmt.Printf("\nSecrets: %s\n", msg)
+						fmt.Printf("\n%s %s\n", ui.warn.Render("Secrets:"), ui.warn.Render(msg))
 					}
 				}
 			}

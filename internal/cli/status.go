@@ -24,83 +24,42 @@ func newStatusCmd() *cobra.Command {
 
 			st, _ := state.Load(statePath(root))
 			stack := detectStack(cmd.Context(), root)
+			scope := resolveStatusScope(cmd.Context(), root, st)
 
-			fmt.Println("orbit status")
+			printTitle("orbit status")
 			fmt.Println()
-			fmt.Printf("Project:     %s\n", root)
+			printLabeled(13, "Project", root)
 
 			if len(stack) > 0 {
-				fmt.Printf("Stack:       %s\n", strings.Join(stack, ", "))
-			} else {
-				fmt.Println("Stack:       (none detected)")
+				printLabeled(13, "Detected", strings.Join(stack, ", "))
 			}
 
 			env := st.Environment
 			if env == "" {
 				env = "production"
 			}
-			fmt.Printf("Environment: %s\n", env)
+			printLabeled(13, "Environment", env)
 
-			printAuthStatus(cmd.Context(), stack)
-			printPendingSetup(stack, st)
-
-			if len(st.ConfiguredProviders()) > 0 {
-				fmt.Println("\nConfigured:")
-				for _, id := range stack {
-					if !st.IsConfigured(id) {
-						continue
-					}
-					target := st.TargetFor(id)
-					if target != "" {
-						fmt.Printf("  • %s (%s)\n", id, target)
-					} else {
-						fmt.Printf("  • %s\n", id)
-					}
-				}
-			} else if len(stack) > 0 {
-				fmt.Println("\nConfigured:  (none)")
+			if label := st.ShipLabel(); label != "" {
+				printLabeled(13, "Active scope", label)
+			} else if len(scope) > 0 && len(scope) < len(stack) {
+				printLabeled(13, "Active scope", "last deploy — "+providerListLabel(scope))
 			}
 
-			runDir, err := run.LatestRunDir(root)
-			if err != nil {
-				fmt.Println("\nLast run:    (none)")
-				printNextSteps(cmd.Context(), root, stack, st, nil)
-				printToolkitHints(root)
-				return nil
-			}
+			printAuthStatus(cmd.Context(), scope)
+			printPendingSetup(scope, st)
+			printConfiguredProviders(scope, st)
 
-			relRun, _ := filepath.Rel(root, runDir)
-			fmt.Printf("\nLast run:    %s\n", filepath.ToSlash(relRun))
+			printScopeDeployStatus(root, scope)
 
-			var summary *run.Summary
-			if summary, err = run.LoadSummary(runDir); err == nil && summary.OK {
-				fmt.Printf("  Status:    succeeded (%s)\n", summary.Duration)
-				if summary.APIURL != "" {
-					fmt.Printf("  API URL:   %s\n", summary.APIURL)
+			printNextSteps(cmd.Context(), root, scope, st)
+			summary := scopeSummary(root, scope)
+			printRecommendedNext(cmd.Context(), root, st, scope, summary)
+			if stackContains(scope, "cloudflare") {
+				if msg := cloudflareSecretsSummary(cmd.Context(), root, st); msg != "" {
+					fmt.Println()
+					fmt.Printf("%s %s\n", ui.warn.Render("Secrets:"), ui.warn.Render(msg))
 				}
-				if summary.DocsURL != "" {
-					fmt.Printf("  Docs URL:  %s\n", summary.DocsURL)
-				}
-				fmt.Printf("  Logs:      %s\n", summary.RunDir)
-			} else if failure, err := run.LoadFailure(runDir); err == nil {
-				fmt.Printf("  Status:    failed at %s\n", failure.FailedStep)
-				fmt.Printf("  Error:     %s\n", failure.Message)
-				if failure.Hint != nil && failure.Hint.Action != "" {
-					fmt.Printf("  Action:    %s\n", failure.Hint.Action)
-				}
-				fmt.Printf("  Logs:      %s\n", failure.LogPaths.Combined)
-				fmt.Printf("  Retry:     orbit retry\n")
-			} else if manifest, err := run.LoadManifest(runDir); err == nil {
-				if manifest.OK {
-					fmt.Println("  Status:    succeeded")
-				} else {
-					fmt.Println("  Status:    incomplete")
-				}
-			}
-
-			printNextSteps(cmd.Context(), root, stack, st, summary)
-			if msg := cloudflareSecretsSummary(cmd.Context(), root, st); msg != "" {
-				fmt.Printf("\nSecrets:     %s\n", msg)
 			}
 			printToolkitHints(root)
 			return nil
@@ -108,19 +67,108 @@ func newStatusCmd() *cobra.Command {
 	}
 }
 
-func printAuthStatus(ctx context.Context, stack []string) {
-	if len(stack) == 0 {
+func printConfiguredProviders(scope []string, st state.Project) {
+	configured := false
+	for _, id := range scope {
+		if st.IsConfigured(id) {
+			configured = true
+			break
+		}
+	}
+	if !configured {
 		return
 	}
-	fmt.Println("\nAuthentication:")
-	for _, id := range stack {
+	fmt.Println()
+	printSection("Configured")
+	for _, id := range scope {
+		if !st.IsConfigured(id) {
+			continue
+		}
+		target := st.TargetFor(id)
+		if target != "" {
+			printBullet(styledProvider(id) + ui.dim.Render(" (") + ui.value.Render(target) + ui.dim.Render(")"))
+		} else {
+			printBullet(styledProvider(id))
+		}
+	}
+}
+
+func printScopeDeployStatus(root string, scope []string) {
+	label := scopeProviderLabel(scope)
+	if label == "" {
+		return
+	}
+
+	record, ok := run.LastSuccessfulDeploy(root, label)
+	if ok && record != nil {
+		fmt.Println()
+		printSection("Deployed (this scope)")
+		if !record.DeployedAt.IsZero() {
+			printKV("When", formatTimeAgo(record.DeployedAt))
+		}
+		if record.Duration != "" {
+			printKV("Duration", record.Duration)
+		}
+		if record.APIURL != "" {
+			printKV("API URL", record.APIURL)
+		}
+		if record.DocsURL != "" {
+			printKV("Docs URL", record.DocsURL)
+		}
+		if record.RunDir != "" {
+			printKV("Run", record.RunDir)
+		}
+	}
+
+	runDir, err := run.LatestRunDir(root)
+	if err != nil {
+		if !ok {
+			fmt.Println()
+			printKVPlain("Last run", "(none)")
+		}
+		return
+	}
+
+	summary, _ := run.LoadSummary(runDir)
+	failure, _ := run.LoadFailure(runDir)
+	if summary != nil && summary.OK && summary.Provider == label {
+		return
+	}
+	if failure != nil && failure.Provider != label && failure.Provider != "" {
+		return
+	}
+
+	relRun, _ := filepath.Rel(root, runDir)
+	if failure != nil {
+		fmt.Println()
+		printKV("Last run", filepath.ToSlash(relRun))
+		fmt.Printf("  %s %s\n", ui.label.Render("Status:"), ui.error.Render("failed at "+failure.FailedStep))
+		fmt.Printf("  %s %s\n", ui.label.Render("Error:"), ui.error.Render(failure.Message))
+		if failure.Hint != nil && failure.Hint.Action != "" {
+			fmt.Printf("  %s %s\n", ui.label.Render("Action:"), highlightCmdLine(failure.Hint.Action))
+		}
+		printKV("Logs", failure.LogPaths.Combined)
+		fmt.Printf("  %s %s\n", ui.label.Render("Retry:"), highlightCmdLine("orbit retry"))
+	} else if !ok {
+		fmt.Println()
+		printKVPlain("Last run", filepath.ToSlash(relRun))
+	}
+}
+
+func printAuthStatus(ctx context.Context, scope []string) {
+	if len(scope) == 0 {
+		return
+	}
+	fmt.Println()
+	printSection("Authentication")
+	for _, id := range scope {
 		p, err := provider.Get(id)
 		if err != nil {
 			continue
 		}
 		who, err := p.WhoAmI(ctx)
 		if err != nil {
-			fmt.Printf("  • %-12s error: %v\n", id, err)
+			fmt.Printf("  %s %-12s %s\n", ui.dim.Render("•"), id, ui.error.Render(fmt.Sprintf("error: %v", err)))
 			continue
 		}
 		if who.LoggedIn {
@@ -128,16 +176,16 @@ func printAuthStatus(ctx context.Context, stack []string) {
 			if who.Account != "" {
 				line = who.Account
 			}
-			fmt.Printf("  • %-12s %s\n", id, line)
+			fmt.Printf("  %s %-12s %s\n", okMark(), styledProvider(id), ui.value.Render(line))
 		} else {
-			fmt.Printf("  • %-12s not logged in → orbit login %s\n", id, id)
+			fmt.Printf("  %s %-12s %s\n", failMark(), styledProvider(id), highlightCmdLine("orbit login "+id))
 		}
 	}
 }
 
-func printPendingSetup(stack []string, st state.Project) {
+func printPendingSetup(scope []string, st state.Project) {
 	var pending []string
-	for _, id := range stack {
+	for _, id := range scope {
 		if !st.IsConfigured(id) {
 			pending = append(pending, id)
 		}
@@ -145,18 +193,34 @@ func printPendingSetup(stack []string, st state.Project) {
 	if len(pending) == 0 {
 		return
 	}
-	fmt.Println("\nPending setup:")
+	fmt.Println()
+	printSection("Pending setup")
 	for _, id := range pending {
-		fmt.Printf("  • %s → orbit configure --provider %s\n", id, id)
+		fmt.Printf("  %s %s\n", styledProvider(id), highlightCmdLine("→ orbit configure --provider "+id))
 	}
 }
 
-func printNextSteps(ctx context.Context, root string, stack []string, st state.Project, summary *run.Summary) {
-	if len(stack) == 0 {
+func scopeSummary(root string, scope []string) *run.Summary {
+	record, ok := run.LastSuccessfulDeploy(root, scopeProviderLabel(scope))
+	if !ok || record == nil {
+		return nil
+	}
+	return &run.Summary{
+		APIURL:  record.APIURL,
+		DocsURL: record.DocsURL,
+	}
+}
+
+func printNextSteps(ctx context.Context, root string, scope []string, st state.Project) {
+	if len(scope) == 0 {
 		return
 	}
+
+	label := scopeProviderLabel(scope)
+	record, hasDeploy := run.LastSuccessfulDeploy(root, label)
+
 	var steps []string
-	for _, id := range stack {
+	for _, id := range scope {
 		p, err := provider.Get(id)
 		if err != nil {
 			continue
@@ -167,31 +231,37 @@ func printNextSteps(ctx context.Context, root string, stack []string, st state.P
 			break
 		}
 	}
-	for _, id := range stack {
+	for _, id := range scope {
 		if !st.IsConfigured(id) {
-			steps = append(steps, "orbit configure --all")
+			if len(scope) == 1 {
+				steps = append(steps, fmt.Sprintf("orbit configure --provider %s", scope[0]))
+			} else {
+				steps = append(steps, "orbit ship")
+			}
 			break
 		}
 	}
-	if summary == nil && len(st.ConfiguredProviders()) > 0 {
-		steps = append(steps, "orbit deploy")
+
+	if !hasDeploy && len(st.ConfiguredProviders()) > 0 {
+		steps = append(steps, "orbit ship")
 	}
-	if summary != nil && summary.OK {
-		if summary.APIURL != "" {
+	if hasDeploy && record != nil {
+		if record.APIURL != "" {
 			steps = append(steps, "orbit open --target api")
 		}
-		if summary.DocsURL != "" {
+		if record.DocsURL != "" {
 			steps = append(steps, "orbit open --target docs")
 		}
-		if msg := cloudflareSecretsSummary(ctx, root, st); msg != "" {
+		if stackContains(scope, "cloudflare") && cloudflareSecretsSummary(ctx, root, st) != "" {
 			steps = append(steps, "orbit secrets")
 		}
 	}
 	if len(steps) == 0 {
 		return
 	}
-	fmt.Println("\nNext:")
+	fmt.Println()
+	printSection("Next")
 	for _, s := range steps {
-		fmt.Printf("  → %s\n", s)
+		printNextStep(s)
 	}
 }

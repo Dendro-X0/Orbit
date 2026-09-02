@@ -9,6 +9,77 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
+// printProviderAuthStatus checks each provider CLI session (wrangler, vercel, etc.).
+// If you are already logged in on the web, OAuth is usually one click — Orbit does not
+// read browser cookies; it trusts the official CLI's whoami after login.
+func printProviderAuthStatus(ctx context.Context, ids []string) {
+	for _, id := range ids {
+		p, err := provider.Get(id)
+		if err != nil {
+			continue
+		}
+		who, err := p.WhoAmI(ctx)
+		if err != nil {
+			fmt.Printf("  %s %-12s error checking session\n", ui.dim.Render("•"), p.DisplayName())
+			continue
+		}
+		if who.LoggedIn {
+			account := who.Account
+			if account == "" {
+				account = "logged in"
+			}
+			fmt.Printf("  %s %-12s %s\n", okMark(), styledProvider(p.DisplayName()), ui.value.Render(account))
+		} else {
+			fmt.Printf("  %s %-12s %s\n", failMark(), styledProvider(p.DisplayName()), ui.dim.Render("not logged in (browser OAuth if needed)"))
+		}
+	}
+}
+
+// ensureProvidersLoggedIn runs OAuth only for providers without an active CLI session.
+func ensureProvidersLoggedIn(ctx context.Context, ids []string, prompt bool) error {
+	printProviderAuthStatus(ctx, ids)
+	fmt.Println()
+
+	pending, err := providersNeedingAuth(ctx, ids)
+	if err != nil {
+		return err
+	}
+	if len(pending) == 0 {
+		printSuccess("All selected providers have an active CLI session.")
+		return nil
+	}
+
+	if !prompt || !isInteractive() {
+		return authRequiredError(pending)
+	}
+
+	for _, id := range pending {
+		p, err := provider.Get(id)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%s has no CLI session yet.\n", styledProvider(p.DisplayName()))
+		fmt.Println(ui.dim.Render("If you are already signed in on the web, OAuth is usually one click."))
+		start := true
+		if err := huh.NewConfirm().
+			Title(fmt.Sprintf("Log in to %s now?", p.DisplayName())).
+			Description("Opens the provider's official browser OAuth flow.").
+			Value(&start).
+			Run(); err != nil {
+			return err
+		}
+		if !start {
+			return authRequiredError(pending)
+		}
+		if err := runOAuthLoginWizard(ctx, id, p); err != nil {
+			return err
+		}
+		printProviderAuthStatus(ctx, []string{id})
+		fmt.Println()
+	}
+	return nil
+}
+
 func providersNeedingAuth(ctx context.Context, ids []string) ([]string, error) {
 	var pending []string
 	for _, id := range ids {
@@ -25,45 +96,6 @@ func providersNeedingAuth(ctx context.Context, ids []string) ([]string, error) {
 		}
 	}
 	return pending, nil
-}
-
-// ensureProvidersLoggedIn runs OAuth for providers that are not authenticated.
-// When prompt is false, returns an error listing missing logins.
-func ensureProvidersLoggedIn(ctx context.Context, ids []string, prompt bool) error {
-	pending, err := providersNeedingAuth(ctx, ids)
-	if err != nil {
-		return err
-	}
-	if len(pending) == 0 {
-		return nil
-	}
-
-	if !prompt || !isInteractive() {
-		return authRequiredError(pending)
-	}
-
-	for _, id := range pending {
-		p, err := provider.Get(id)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("\n%s is not logged in.\n", p.DisplayName())
-		start := true
-		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Log in to %s now?", p.DisplayName())).
-			Description("Opens the provider's official browser OAuth flow.").
-			Value(&start).
-			Run(); err != nil {
-			return err
-		}
-		if !start {
-			return authRequiredError(pending)
-		}
-		if err := runOAuthLoginWizard(ctx, id, p); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func authRequiredError(ids []string) error {

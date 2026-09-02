@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/Dendro-X0/Orbit/internal/project"
 	"github.com/Dendro-X0/Orbit/internal/provider"
@@ -40,6 +39,8 @@ func newConfigureCmd() *cobra.Command {
 				return fmt.Errorf("no supported provider detected in this project")
 			}
 
+			activeScope := resolveStatusScope(cmd.Context(), root, st)
+
 			targets := map[string]string{}
 			var configureIDs []string
 
@@ -52,12 +53,15 @@ func newConfigureCmd() *cobra.Command {
 				configureIDs = []string{providerFlag}
 				targets[providerFlag] = st.TargetFor(providerFlag)
 			case useWizard:
-				wizard, err := runConfigureWizard(cmd.Context(), root, st, stack, environment)
+				wizard, err := runConfigureWizard(cmd.Context(), root, st, stack, activeScope, environment)
 				if err != nil {
 					return err
 				}
 				if wizard.ConfigureAll {
-					configureIDs = stack
+					configureIDs = wizard.ScopeProviders
+					if len(configureIDs) == 0 {
+						configureIDs = stack
+					}
 					environment = wizard.Environment
 				} else {
 					configureIDs = []string{wizard.ProviderID}
@@ -65,7 +69,11 @@ func newConfigureCmd() *cobra.Command {
 					environment = wizard.Environment
 				}
 			default:
-				configureIDs = stack
+				if len(activeScope) > 0 && len(activeScope) < len(stack) {
+					configureIDs = activeScope
+				} else {
+					configureIDs = stack
+				}
 			}
 
 			if len(configureIDs) > 1 {
@@ -101,18 +109,18 @@ func newConfigureCmd() *cobra.Command {
 func printConfigureResult(res provider.ConfigureResult) {
 	if res.Message != "" {
 		if res.OK {
-			fmt.Printf("✓ %s\n", res.Message)
+			printSuccess(res.Message)
 		} else {
-			fmt.Fprintf(os.Stderr, "✗ %s\n", res.Message)
+			printError(res.Message)
 		}
 	}
 	for _, change := range res.Changed {
-		fmt.Printf("  updated %s\n", change)
+		fmt.Printf("  %s %s\n", ui.dim.Render("updated"), styledPath(change))
 	}
 	for _, h := range res.Hints {
-		fmt.Printf("  hint [%s]: %s\n", h.Code, h.Message)
+		fmt.Printf("  %s [%s]: %s\n", ui.info.Render("hint"), h.Code, h.Message)
 		if h.Action != "" {
-			fmt.Printf("  action: %s\n", h.Action)
+			fmt.Printf("  %s %s\n", ui.label.Render("action:"), highlightCmdLine(h.Action))
 		}
 	}
 }
