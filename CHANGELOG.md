@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 — 2026-09-02
+
+### Fixed
+- Health check URL in `orbit status` recommendations detects the route from API source (e.g. `/v1/health` instead of assuming `/health`)
+
 ## 0.2.0 — 2026-09-02
 
 ### Ship workflow

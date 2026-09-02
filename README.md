@@ -32,7 +32,7 @@ Before calling a release production-ready for your project:
 5. `orbit deploy` or ship → **Ship**
 6. `orbit status` — **Live**, no blocking **Recommended next**
 7. Update `CORS_ORIGINS` in `wrangler.toml` when docs URL is known
-8. Health: `curl <API_URL>/health`
+8. Health: `curl <API_URL>/v1/health` (or `/health` depending on your API)
 
 Assess reference: [assess-api DEPLOY.md](https://github.com/Dendro-X0/assess-api/blob/main/DEPLOY.md) (if applicable).
 

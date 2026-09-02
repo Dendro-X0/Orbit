@@ -2,6 +2,7 @@ package cli
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -26,6 +27,27 @@ func TestCorsOnlyLocalDev(t *testing.T) {
 	}
 	if corsOnlyLocalDev([]string{"http://localhost:5173", "https://docs.example.com"}) {
 		t.Fatal("expected mixed origins")
+	}
+}
+
+func TestDetectAPIHealthPath(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "apps", "api")
+	src := filepath.Join(target, "src")
+	if err := os.MkdirAll(src, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	content := `export function createApp() {
+  app.get("/v1/health", (c) => c.json({ ok: true }));
+}`
+	if err := os.WriteFile(filepath.Join(src, "app.ts"), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if got := detectAPIHealthPath(dir, "apps/api"); got != "/v1/health" {
+		t.Fatalf("detectAPIHealthPath = %q, want /v1/health", got)
+	}
+	if got := detectAPIHealthPath(dir, "missing"); got != "/health" {
+		t.Fatalf("detectAPIHealthPath fallback = %q", got)
 	}
 }
 

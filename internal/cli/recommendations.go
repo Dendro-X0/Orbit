@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	"github.com/Dendro-X0/Orbit/internal/run"
 	"github.com/Dendro-X0/Orbit/internal/state"
@@ -79,7 +78,7 @@ func buildRecommendedSteps(ctx context.Context, root string, st state.Project, s
 	}
 
 	if summary != nil && summary.APIURL != "" {
-		health := strings.TrimSuffix(summary.APIURL, "/") + "/health"
+		health := apiHealthURL(ctx, root, st, summary.APIURL)
 		steps = append(steps, "Health check — "+ui.url.Render(health))
 	}
 
