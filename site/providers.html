@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Providers — Orbit</title>
+    <meta name="description" content="How Orbit detects Cloudflare, Vercel, Fly.io, and Netlify and scopes status to what you ship." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header" data-site-header>
+      <div class="site-header__inner">
+        <a class="brand" href="/">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="3.2" fill="#3ecfbf" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="#3ecfbf" stroke-width="1.4" transform="rotate(-28 16 16)" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="rgba(232,238,244,0.35)" stroke-width="1.2" transform="rotate(42 16 16)" />
+          </svg>
+          Orbit
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <a href="/getting-started.html">Getting Started</a>
+          <a href="/ship.html">Ship</a>
+          <a href="/commands.html">Commands</a>
+          <a href="/providers.html" aria-current="page">Providers</a>
+          <a href="https://github.com/Dendro-X0/Orbit">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="shell">
+      <div class="doc-layout">
+        <aside class="side-nav" aria-label="On this page">
+          <h2>On this page</h2>
+          <ul>
+            <li><a href="#detect">Detection</a></li>
+            <li><a href="#cloudflare">Cloudflare</a></li>
+            <li><a href="#vercel">Vercel</a></li>
+            <li><a href="#others">Fly and Netlify</a></li>
+            <li><a href="#scope">Scope vs detection</a></li>
+            <li><a href="#troubleshoot">Common fixes</a></li>
+          </ul>
+        </aside>
+
+        <article class="prose">
+          <h1>Providers</h1>
+          <p class="summary">
+            Orbit detects provider config in your tree and orchestrates the official CLIs. Detection is not the same as active ship scope.
+          </p>
+
+          <h2 id="detect">Detection</h2>
+          <table>
+            <thead>
+              <tr><th>Provider</th><th>Detection</th><th>Typical role</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Cloudflare</td><td><code>wrangler.toml</code></td><td>Workers API, D1</td></tr>
+              <tr><td>Vercel</td><td><code>vercel.json</code> or project markers</td><td>Static / docs</td></tr>
+              <tr><td>Fly.io</td><td><code>fly.toml</code></td><td>Apps / containers</td></tr>
+              <tr><td>Netlify</td><td><code>netlify.toml</code></td><td>Static sites</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="cloudflare">Cloudflare</h2>
+          <p>
+            Requires <code>wrangler</code> on <code>PATH</code>. Orbit uses login / whoami JSON, configure for D1 when applicable, deploy phases, and <code>orbit secrets</code> for documented Worker secrets.
+          </p>
+          <pre><code># Secrets (set via `wrangler secret put`):
+# API_KEY_PEPPER, GITHUB_TOKEN</code></pre>
+          <p>
+            <code>CORS_ORIGINS</code> under <code>[vars]</code> feeds status recommendations. Localhost-only origins remind you before shipping a production frontend.
+          </p>
+
+          <h2 id="vercel">Vercel</h2>
+          <p>
+            Used for static docs and frontends. On full-stack with Cloudflare, Orbit can wire <code>VITE_API_URL</code> from the Worker URL before deploy.
+          </p>
+
+          <h2 id="others">Fly.io and Netlify</h2>
+          <p>
+            Detected when their config files exist. Choose them in <code>orbit ship</code>. Prefer each provider’s own docs for advanced flags; Orbit wraps the common path.
+          </p>
+
+          <h2 id="scope">Scope vs detection</h2>
+          <p>
+            Detection answers what is in the repo. Scope answers what you are shipping now. A monorepo can detect Cloudflare and Vercel while status stays API-only until you pick Static site or Full-stack.
+          </p>
+
+          <h2 id="troubleshoot">Common fixes</h2>
+          <ul>
+            <li><strong>Doctor fails:</strong> install the scoped CLI, put it on <code>PATH</code>, then <code>orbit login</code></li>
+            <li><strong>Worker 1101 / 500:</strong> set required secrets with <code>orbit secrets --put …</code></li>
+            <li><strong>Health 404:</strong> use the path from status (often <code>/v1/health</code>)</li>
+            <li><strong>Status still asks for Vercel:</strong> re-run <code>orbit ship</code> and choose API / backend only</li>
+            <li><strong>Mid-deploy failure:</strong> <code>orbit logs</code> then <code>orbit retry</code></li>
+          </ul>
+          <p>
+            Longer troubleshooting notes live in
+            <a href="https://github.com/Dendro-X0/Orbit/blob/main/docs/troubleshooting.md">docs/troubleshooting.md</a>.
+          </p>
+        </article>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="shell">
+        <span>Orbit · MIT · v0.2.1</span>
+        <span><a href="/getting-started.html">Back to getting started</a></span>
+      </div>
+    </footer>
+    <script src="/assets/site.js"></script>
+  </body>
+</html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Commands — Orbit</title>
+    <meta name="description" content="Orbit CLI command reference for ship, status, deploy, secrets, and retry." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header" data-site-header>
+      <div class="site-header__inner">
+        <a class="brand" href="/">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="3.2" fill="#3ecfbf" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="#3ecfbf" stroke-width="1.4" transform="rotate(-28 16 16)" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="rgba(232,238,244,0.35)" stroke-width="1.2" transform="rotate(42 16 16)" />
+          </svg>
+          Orbit
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <a href="/getting-started.html">Getting Started</a>
+          <a href="/ship.html">Ship</a>
+          <a href="/commands.html" aria-current="page">Commands</a>
+          <a href="/providers.html">Providers</a>
+          <a href="https://github.com/Dendro-X0/Orbit">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="shell">
+      <div class="doc-layout">
+        <aside class="side-nav" aria-label="On this page">
+          <h2>On this page</h2>
+          <ul>
+            <li><a href="#guided">Guided</a></li>
+            <li><a href="#status">Status</a></li>
+            <li><a href="#auth">Auth</a></li>
+            <li><a href="#deploy">Configure and deploy</a></li>
+            <li><a href="#secrets">Secrets and URLs</a></li>
+            <li><a href="#runs">Run artifacts</a></li>
+          </ul>
+        </aside>
+
+        <article class="prose">
+          <h1>Commands</h1>
+          <p class="summary">
+            CLI reference. Run <code>orbit &lt;command&gt; --help</code> for flags. Global <code>--path</code> sets the project root.
+          </p>
+
+          <h2 id="guided">Guided workflow</h2>
+          <table>
+            <thead>
+              <tr><th>Command</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>orbit</code> / <code>orbit ship</code></td><td>Project type → provider(s) → actions</td></tr>
+              <tr><td><code>orbit menu</code></td><td>Interactive command picker</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="status">Status and health</h2>
+          <table>
+            <thead>
+              <tr><th>Command</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>orbit status</code></td><td>Scoped config, auth, last deploy, next steps</td></tr>
+              <tr><td><code>orbit doctor</code></td><td>CLI and auth health</td></tr>
+              <tr><td><code>orbit whoami</code></td><td>Connected accounts</td></tr>
+              <tr><td><code>orbit version</code></td><td>Build version, commit, date</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="auth">Auth</h2>
+          <table>
+            <thead>
+              <tr><th>Command</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>orbit login [provider]</code></td><td>Browser OAuth by default</td></tr>
+              <tr><td><code>orbit login --all</code></td><td>All detected or registered providers</td></tr>
+              <tr><td><code>orbit login --guide</code></td><td>Manual API token wizard</td></tr>
+              <tr><td><code>orbit login --token …</code></td><td>Store token (<code>-</code> reads stdin)</td></tr>
+              <tr><td><code>orbit logout [provider]</code></td><td>Remove keychain tokens</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="deploy">Configure and deploy</h2>
+          <table>
+            <thead>
+              <tr><th>Command</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>orbit configure</code></td><td>Setup for active scope</td></tr>
+              <tr><td><code>orbit configure --provider …</code></td><td>Single provider</td></tr>
+              <tr><td><code>orbit configure --all</code></td><td>Every detected provider</td></tr>
+              <tr><td><code>orbit deploy</code></td><td>Stack order (API then docs)</td></tr>
+              <tr><td><code>orbit deploy --provider …</code></td><td>Single provider</td></tr>
+              <tr><td><code>orbit retry</code></td><td>Resume from <code>failure.json</code></td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="secrets">Secrets, wiring, URLs</h2>
+          <table>
+            <thead>
+              <tr><th>Command</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>orbit secrets</code></td><td>Compare wrangler comments to live secrets</td></tr>
+              <tr><td><code>orbit secrets --put NAME</code></td><td>Interactive secret put</td></tr>
+              <tr><td><code>orbit wire</code></td><td>Set <code>VITE_API_URL</code> on Vercel</td></tr>
+              <tr><td><code>orbit open --target api|docs|any</code></td><td>Open last deploy URL</td></tr>
+              <tr><td><code>orbit logs</code></td><td>Last run logs</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="runs">Run artifacts</h2>
+          <p>Each deploy writes <code>.orbit/runs/&lt;timestamp&gt;/</code>:</p>
+          <ul>
+            <li><code>combined.log</code>: full session (secrets redacted)</li>
+            <li><code>steps/*.stdout.log</code> / <code>*.stderr.log</code>: per-phase logs</li>
+            <li><code>manifest.json</code>: phases, timings, exit codes</li>
+            <li><code>summary.json</code>: final outcome</li>
+            <li><code>failure.json</code>: present on error for <code>orbit retry</code></li>
+          </ul>
+        </article>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="shell">
+        <span>Orbit · MIT · v0.2.1</span>
+        <span><a href="/providers.html">Next: Providers</a></span>
+      </div>
+    </footer>
+    <script src="/assets/site.js"></script>
+  </body>
+</html>

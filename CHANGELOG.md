@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Docs
+- Markdown guides under `docs/` (start here, ship, commands, providers, secrets, troubleshooting)
+- Static docs site under `site/` for Vercel/Netlify deploy
+
 ## 0.2.1 — 2026-09-02
 
 ### Fixed

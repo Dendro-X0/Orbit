@@ -1,5 +1,6 @@
 /bin/
 /dist/
+/orbit
 .orbit/runs/
 *.exe
 *.test

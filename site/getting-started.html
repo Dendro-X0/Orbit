@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Getting started — Orbit</title>
+    <meta name="description" content="Install Orbit and complete your first scoped deploy." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header" data-site-header>
+      <div class="site-header__inner">
+        <a class="brand" href="/">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="3.2" fill="#3ecfbf" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="#3ecfbf" stroke-width="1.4" transform="rotate(-28 16 16)" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="rgba(232,238,244,0.35)" stroke-width="1.2" transform="rotate(42 16 16)" />
+          </svg>
+          Orbit
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <a href="/getting-started.html" aria-current="page">Getting Started</a>
+          <a href="/ship.html">Ship</a>
+          <a href="/commands.html">Commands</a>
+          <a href="/providers.html">Providers</a>
+          <a href="https://github.com/Dendro-X0/Orbit">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="shell">
+      <div class="doc-layout">
+        <aside class="side-nav" aria-label="On this page">
+          <h2>On this page</h2>
+          <ul>
+            <li><a href="#install">Install</a></li>
+            <li><a href="#first-deploy">First deploy</a></li>
+            <li><a href="#after">After deploy</a></li>
+            <li><a href="#checklist">Production checklist</a></li>
+          </ul>
+        </aside>
+
+        <article class="prose">
+          <h1>Getting started</h1>
+          <p class="summary">
+            Install Orbit from source, run <code>orbit ship</code> in your project, then use status and secrets to finish production readiness.
+          </p>
+
+          <h2 id="install">Install</h2>
+          <p>Clone the repo and build a versioned binary:</p>
+          <pre><code>git clone https://github.com/Dendro-X0/Orbit.git
+cd Orbit
+make build
+./orbit version</code></pre>
+          <p>Add the binary to your <code>PATH</code>, or call it by full path from other projects.</p>
+
+          <h2 id="first-deploy">First deploy</h2>
+          <p>From the project you want live:</p>
+          <pre><code>cd /path/to/your-project
+orbit ship</code></pre>
+          <ol>
+            <li>Choose <strong>API / backend</strong>, <strong>Static site / docs</strong>, or <strong>Full-stack</strong></li>
+            <li>Pick the provider for that scope</li>
+            <li>Log in, configure, set secrets, then deploy</li>
+          </ol>
+          <p>
+            Orbit stores the scope in <code>.orbit/state.json</code>. Later status and configure follow that intent.
+          </p>
+
+          <h2 id="after">After deploy</h2>
+          <pre><code>orbit status
+orbit secrets
+orbit open --target api</code></pre>
+          <p>
+            Status recommends missing Worker secrets, localhost-only CORS, and the health URL detected from your API source when possible.
+          </p>
+
+          <h2 id="checklist">Production checklist</h2>
+          <ol>
+            <li><code>orbit ship</code> with the intended scope</li>
+            <li><code>orbit doctor</code> for scoped CLIs and auth</li>
+            <li><code>orbit configure</code> for D1 / project links</li>
+            <li><code>orbit secrets</code> until required secrets are set</li>
+            <li>Deploy via Ship or <code>orbit deploy --provider …</code></li>
+            <li><code>orbit status</code> shows a live URL without blocking next steps</li>
+            <li>Update <code>CORS_ORIGINS</code> when a production docs URL exists</li>
+            <li>Hit the health route Orbit prints</li>
+          </ol>
+          <p class="note">
+            Need the long form? See the markdown guides in
+            <a href="https://github.com/Dendro-X0/Orbit/tree/main/docs">docs/</a>
+            on GitHub.
+          </p>
+        </article>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="shell">
+        <span>Orbit · MIT · v0.2.1</span>
+        <span><a href="/ship.html">Next: Ship workflow</a></span>
+      </div>
+    </footer>
+    <script src="/assets/site.js"></script>
+  </body>
+</html>
