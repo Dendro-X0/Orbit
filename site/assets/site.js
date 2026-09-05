@@ -5,7 +5,10 @@
 
   if (docLayout) {
     document.body.classList.add("doc-page");
+    initGuideNav();
   }
+
+  initHeaderGuidesLink();
 
   if (header) {
     const onHeaderScroll = () => {
@@ -139,4 +142,80 @@ function initScrollSpy(article) {
   pickActive();
   window.addEventListener("scroll", pickActive, { passive: true });
   window.addEventListener("resize", pickActive, { passive: true });
+}
+
+const GUIDE_PAGES = [
+  { href: "/getting-started.html", label: "Getting started" },
+  { href: "/ship.html", label: "Ship workflow" },
+  { href: "/commands.html", label: "Commands" },
+  { href: "/providers.html", label: "Providers" },
+  { href: "/auth.html", label: "Auth" },
+  { href: "/configure-and-deploy.html", label: "Configure & deploy" },
+  { href: "/secrets.html", label: "Secrets & status" },
+  { href: "/state-and-runs.html", label: "State & runs" },
+  { href: "/troubleshooting.html", label: "Troubleshooting" },
+];
+
+function initHeaderGuidesLink() {
+  const nav = document.querySelector(".site-header .nav");
+  if (!nav || nav.querySelector("[data-guides-link]")) {
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.href = "/guides.html";
+  link.textContent = "Guides";
+  link.dataset.guidesLink = "";
+  const github = nav.querySelector('a[href*="github.com"]');
+  if (github) {
+    nav.insertBefore(link, github);
+  } else {
+    nav.appendChild(link);
+  }
+
+  const path = normalizePath(location.pathname);
+  if (path === "/guides.html") {
+    link.setAttribute("aria-current", "page");
+  }
+}
+
+function initGuideNav() {
+  const sideNav = document.querySelector(".side-nav");
+  if (!sideNav || sideNav.querySelector(".side-nav__guides")) {
+    return;
+  }
+
+  const path = normalizePath(location.pathname);
+  const block = document.createElement("div");
+  block.className = "side-nav__guides";
+  block.innerHTML = "<h2>All guides</h2>";
+
+  const list = document.createElement("ul");
+  for (const page of GUIDE_PAGES) {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = page.href;
+    a.textContent = page.label;
+    if (page.href === path) {
+      a.setAttribute("aria-current", "page");
+    }
+    li.appendChild(a);
+    list.appendChild(li);
+  }
+
+  block.appendChild(list);
+  sideNav.appendChild(block);
+}
+
+function normalizePath(pathname) {
+  if (!pathname || pathname === "/") {
+    return "/index.html";
+  }
+  if (pathname.endsWith("/")) {
+    return `${pathname.slice(0, -1)}.html`;
+  }
+  if (!pathname.includes(".") && !pathname.endsWith(".html")) {
+    return `${pathname}.html`;
+  }
+  return pathname;
 }

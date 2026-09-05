@@ -29,6 +29,7 @@
         </a>
         <nav class="nav" aria-label="Primary">
           <a href="/getting-started.html">Getting Started</a>
+          <a href="/one-stack.html">One stack</a>
           <a href="/ship.html">Ship</a>
           <a href="/commands.html">Commands</a>
           <a href="/providers.html">Providers</a>
@@ -68,7 +69,7 @@
           </p>
           <div class="cta-row">
             <a class="button button-primary" href="/getting-started.html">Get started</a>
-            <a class="button button-ghost" href="/ship.html">See the ship flow</a>
+            <a class="button button-ghost" href="/one-stack.html">One-stack ship</a>
           </div>
         </div>
       </div>
@@ -106,6 +107,17 @@
       </section>
 
       <section class="section reveal">
+        <h2>Documentation</h2>
+        <p>Nine guides cover install, ship, every command, providers, auth, deploy, secrets, run artifacts, and troubleshooting.</p>
+        <div class="prose-card-grid">
+          <a class="prose-card" href="/getting-started.html"><strong>Getting started</strong><span>Install and first scoped deploy</span></a>
+          <a class="prose-card" href="/ship.html"><strong>Ship workflow</strong><span>Menus and prepare-and-deploy path</span></a>
+          <a class="prose-card" href="/commands.html"><strong>Commands</strong><span>CLI reference and flags</span></a>
+          <a class="prose-card" href="/guides.html"><strong>All guides</strong><span>Full index of documentation pages</span></a>
+        </div>
+      </section>
+
+      <section class="section reveal">
         <h2>Start in your project</h2>
         <p>Build Orbit, then run ship from the repo you want live.</p>
         <div class="command-block"><code>git clone https://github.com/Dendro-X0/Orbit.git
@@ -113,7 +125,10 @@ cd Orbit && make build
 cd /path/to/your-project
 orbit ship</code></div>
         <p style="margin-top: 1.25rem">
-          Prefer markdown in the repo? Read <a href="https://github.com/Dendro-X0/Orbit/blob/main/docs/START-HERE.md">docs/START-HERE.md</a>.
+          Markdown in the repo:
+          <a href="https://github.com/Dendro-X0/Orbit/tree/main/docs">docs/</a>
+          ·
+          <a href="/guides.html">Site guides</a>
         </p>
       </section>
     </div>

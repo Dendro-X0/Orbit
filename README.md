@@ -2,7 +2,7 @@
 
 Deploy portal for indie and SMB stacks. Orbit orchestrates `wrangler`, `vercel`, `fly`, and `netlify`. Those tools own auth and deploy. Orbit owns the guided ship flow, scoped status, phased logs, and agent-readable failures.
 
-**Docs:** [docs/START-HERE.md](./docs/START-HERE.md) · **Site:** [site/](./site/) (static, deploy with Orbit as Static site / docs)
+**Docs:** [docs/START-HERE.md](./docs/START-HERE.md) · **Launch Phase 1:** [docs/launch/START-HERE.md](./docs/launch/START-HERE.md) · **Site:** [site/](./site/) (static, deploy with Orbit as Static site / docs)
 
 ## Install
 
@@ -36,13 +36,18 @@ When Cloudflare and Vercel are both in a full-stack ship, Orbit can set `VITE_AP
 | Doc | Job |
 |-----|-----|
 | [docs/START-HERE.md](./docs/START-HERE.md) | Install and first deploy |
-| [docs/ship.md](./docs/ship.md) | Guided ship workflow and scope |
-| [docs/commands.md](./docs/commands.md) | CLI reference |
-| [docs/providers.md](./docs/providers.md) | Detection and provider notes |
-| [docs/secrets.md](./docs/secrets.md) | Worker secrets and status tips |
-| [docs/troubleshooting.md](./docs/troubleshooting.md) | Failures, retry, health, CORS |
+| [docs/ship.md](./docs/ship.md) | Guided ship workflow, menus, prepare path |
+| [docs/commands.md](./docs/commands.md) | Full CLI reference and flags |
+| [docs/auth.md](./docs/auth.md) | OAuth, tokens, keychain, logout |
+| [docs/configure-and-deploy.md](./docs/configure-and-deploy.md) | Configure, deploy, retry, wire |
+| [docs/providers.md](./docs/providers.md) | Detection and Orbit vs provider CLI |
+| [docs/secrets.md](./docs/secrets.md) | Worker secrets and status |
+| [docs/state-and-runs.md](./docs/state-and-runs.md) | `.orbit` state and run artifacts |
+| [docs/troubleshooting.md](./docs/troubleshooting.md) | Failures and fixes |
 | [site/](./site/) | Public docs site (HTML) |
 | [CHANGELOG.md](./CHANGELOG.md) | Release notes |
+
+**Note:** Bare `orbit deploy` deploys the full detected stack. Prefer `orbit ship` or `orbit deploy --provider …` for scoped deploys.
 
 ## Production checklist
 
@@ -72,11 +77,11 @@ Or point any static host at the `site/` folder (`vercel.json` included).
 |---------|---------|
 | `orbit ship` | Guided deploy by project type and provider |
 | `orbit status` | Scoped status and recommended next steps |
-| `orbit configure` / `orbit deploy` | Setup and deploy |
+| `orbit configure` / `orbit deploy --provider …` | Setup and scoped deploy |
 | `orbit secrets` / `orbit secrets --put NAME` | Cloudflare Worker secrets |
-| `orbit retry` / `orbit logs` | Resume failed runs and inspect artifacts |
-| `orbit open --target api\|docs` | Open last deploy URL |
-| `orbit doctor` / `orbit version` | Health and build info |
+| `orbit retry` / `orbit logs` / `orbit logs --failed` | Resume failed runs and inspect artifacts |
+| `orbit open --target api\|docs\|any` | Open last deploy URL (`any` prefers API) |
+| `orbit login` / `orbit wire` / `orbit doctor` | Auth, Vercel `VITE_API_URL`, health |
 
 Full tables: [docs/commands.md](./docs/commands.md).
 

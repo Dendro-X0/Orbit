@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Commands — Orbit</title>
-    <meta name="description" content="Orbit CLI command reference for ship, status, deploy, secrets, and retry." />
+    <meta name="description" content="Orbit CLI command reference: ship, status, configure, deploy, secrets, retry, wire, open." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -39,6 +39,7 @@
         <aside class="side-nav" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+            <li><a href="#global">Global</a></li>
             <li><a href="#guided">Guided</a></li>
             <li><a href="#status">Status</a></li>
             <li><a href="#auth">Auth</a></li>
@@ -51,8 +52,12 @@
         <article class="prose">
           <h1>Commands</h1>
           <p class="summary">
-            CLI reference. Run <code>orbit &lt;command&gt; --help</code> for flags. Global <code>--path</code> sets the project root.
+            CLI reference. Run <code>orbit &lt;command&gt; --help</code> for live flags. Full tables live in
+            <a href="https://github.com/Dendro-X0/Orbit/blob/main/docs/commands.md">docs/commands.md</a>.
           </p>
+
+          <h2 id="global">Global</h2>
+          <p><code>--path &lt;dir&gt;</code> sets the project root (default: walk up for <code>.git</code> / <code>go.mod</code> / <code>package.json</code> / <code>pnpm-workspace.yaml</code>).</p>
 
           <h2 id="guided">Guided workflow</h2>
           <table>
@@ -60,7 +65,7 @@
               <tr><th>Command</th><th>Purpose</th></tr>
             </thead>
             <tbody>
-              <tr><td><code>orbit</code> / <code>orbit ship</code></td><td>Project type → provider(s) → actions</td></tr>
+              <tr><td><code>orbit</code> / <code>orbit ship</code></td><td>TTY: project type → provider(s) → actions</td></tr>
               <tr><td><code>orbit menu</code></td><td>Interactive command picker</td></tr>
             </tbody>
           </table>
@@ -71,8 +76,8 @@
               <tr><th>Command</th><th>Purpose</th></tr>
             </thead>
             <tbody>
-              <tr><td><code>orbit status</code></td><td>Scoped config, auth, last deploy, next steps</td></tr>
-              <tr><td><code>orbit doctor</code></td><td>CLI and auth health</td></tr>
+              <tr><td><code>orbit status</code></td><td>Scoped config, auth, last deploy, recommendations</td></tr>
+              <tr><td><code>orbit doctor</code></td><td>CLI + auth checks (non-zero if any fail)</td></tr>
               <tr><td><code>orbit whoami</code></td><td>Connected accounts</td></tr>
               <tr><td><code>orbit version</code></td><td>Build version, commit, date</td></tr>
             </tbody>
@@ -85,12 +90,13 @@
             </thead>
             <tbody>
               <tr><td><code>orbit login [provider]</code></td><td>Browser OAuth by default</td></tr>
-              <tr><td><code>orbit login --all</code></td><td>All detected or registered providers</td></tr>
+              <tr><td><code>orbit login --all</code></td><td>Detected (or all registered) providers</td></tr>
               <tr><td><code>orbit login --guide</code></td><td>Manual API token wizard</td></tr>
               <tr><td><code>orbit login --token …</code></td><td>Store token (<code>-</code> reads stdin)</td></tr>
-              <tr><td><code>orbit logout [provider]</code></td><td>Remove keychain tokens</td></tr>
+              <tr><td><code>orbit logout [provider]</code></td><td>Remove Orbit keychain tokens only</td></tr>
             </tbody>
           </table>
+          <p class="note"><code>logout</code> does not run <code>wrangler logout</code> / <code>vercel logout</code>.</p>
 
           <h2 id="deploy">Configure and deploy</h2>
           <table>
@@ -98,12 +104,12 @@
               <tr><th>Command</th><th>Purpose</th></tr>
             </thead>
             <tbody>
-              <tr><td><code>orbit configure</code></td><td>Setup for active scope</td></tr>
+              <tr><td><code>orbit configure</code></td><td>Setup for active ship scope</td></tr>
               <tr><td><code>orbit configure --provider …</code></td><td>Single provider</td></tr>
-              <tr><td><code>orbit configure --all</code></td><td>Every detected provider</td></tr>
-              <tr><td><code>orbit deploy</code></td><td>Stack order (API then docs)</td></tr>
+              <tr><td><code>orbit configure --all / --dry-run / --yes / --env</code></td><td>All, preview, skip prompts, environment</td></tr>
+              <tr><td><code>orbit deploy</code></td><td><strong>All detected</strong> providers (ignores ship scope)</td></tr>
               <tr><td><code>orbit deploy --provider …</code></td><td>Single provider</td></tr>
-              <tr><td><code>orbit retry</code></td><td>Resume from <code>failure.json</code></td></tr>
+              <tr><td><code>orbit retry [--from-step]</code></td><td>Resume from <code>failure.json</code></td></tr>
             </tbody>
           </table>
 
@@ -113,23 +119,28 @@
               <tr><th>Command</th><th>Purpose</th></tr>
             </thead>
             <tbody>
-              <tr><td><code>orbit secrets</code></td><td>Compare wrangler comments to live secrets</td></tr>
-              <tr><td><code>orbit secrets --put NAME</code></td><td>Interactive secret put</td></tr>
-              <tr><td><code>orbit wire</code></td><td>Set <code>VITE_API_URL</code> on Vercel</td></tr>
-              <tr><td><code>orbit open --target api|docs|any</code></td><td>Open last deploy URL</td></tr>
-              <tr><td><code>orbit logs</code></td><td>Last run logs</td></tr>
+              <tr><td><code>orbit secrets [--put NAME]</code></td><td>Check / set Worker secrets</td></tr>
+              <tr><td><code>orbit wire [--api-url]</code></td><td>Set <code>VITE_API_URL</code> on Vercel</td></tr>
+              <tr><td><code>orbit open --target api|docs|any</code></td><td>Open URL (<code>any</code> prefers API)</td></tr>
+              <tr><td><code>orbit logs [--failed]</code></td><td>Latest run log or failure details</td></tr>
             </tbody>
           </table>
 
           <h2 id="runs">Run artifacts</h2>
-          <p>Each deploy writes <code>.orbit/runs/&lt;timestamp&gt;/</code>:</p>
+          <p>Each deploy writes <code>.orbit/runs/&lt;timestamp&gt;/</code> and updates <code>.orbit/latest</code>:</p>
           <ul>
             <li><code>combined.log</code>: full session (secrets redacted)</li>
             <li><code>steps/*.stdout.log</code> / <code>*.stderr.log</code>: per-phase logs</li>
             <li><code>manifest.json</code>: phases, timings, exit codes</li>
-            <li><code>summary.json</code>: final outcome</li>
-            <li><code>failure.json</code>: present on error for <code>orbit retry</code></li>
+            <li><code>summary.json</code>: success outcome + URLs</li>
+            <li><code>failure.json</code>: failed step, hint, log paths for <code>orbit retry</code></li>
           </ul>
+          <p>
+            See
+            <a href="https://github.com/Dendro-X0/Orbit/blob/main/docs/state-and-runs.md">state-and-runs.md</a>
+            and
+            <a href="https://github.com/Dendro-X0/Orbit/blob/main/docs/auth.md">auth.md</a>.
+          </p>
         </article>
       </div>
     </div>

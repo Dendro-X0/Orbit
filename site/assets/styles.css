@@ -367,7 +367,7 @@ code {
 
 @media (min-width: 720px) {
   .doc-layout {
-    grid-template-columns: minmax(10.5rem, 12.5rem) minmax(0, 1fr);
+    grid-template-columns: minmax(10.5rem, 12.5rem) minmax(0, min(100%, var(--prose)));
     gap: clamp(2rem, 4vw, 3.5rem);
     padding-top: 2rem;
   }
@@ -499,6 +499,81 @@ code {
   font-weight: 500;
 }
 
+.side-nav__guides {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.side-nav__guides h2 {
+  margin: 0 0 0.65rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.side-nav__guides ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.side-nav__guides a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.side-nav__guides a:hover,
+.side-nav__guides a[aria-current="page"] {
+  color: var(--ink);
+}
+
+.prose-card-grid {
+  display: grid;
+  gap: 0.85rem;
+  margin: 1.25rem 0 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .prose-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.prose-card {
+  display: block;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.02);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.prose-card:hover {
+  border-color: rgba(62, 207, 191, 0.4);
+  background: rgba(62, 207, 191, 0.06);
+}
+
+.prose-card strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--ink);
+  font-family: var(--font-display);
+}
+
+.prose-card span {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
 .prose {
   min-width: 0;
 }
@@ -598,8 +673,11 @@ code {
   margin: 1.2rem 0;
   padding: 0.9rem 1rem;
   border-left: 3px solid var(--warn);
+  border-radius: 0 0.35rem 0.35rem 0;
   background: rgba(230, 179, 90, 0.08);
   color: var(--muted);
+  width: fit-content;
+  max-width: min(100%, var(--prose));
 }
 
 .site-footer {
@@ -614,6 +692,124 @@ code {
   flex-wrap: wrap;
   gap: 0.75rem 1.5rem;
   justify-content: space-between;
+}
+
+.draft-banner {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.section-support {
+  margin-top: 0.75rem !important;
+  max-width: 40rem;
+  color: var(--muted) !important;
+  font-size: 0.98rem;
+}
+
+.soft-cta {
+  margin-top: 1.5rem !important;
+  max-width: 40rem;
+  color: var(--muted) !important;
+  font-size: 0.95rem;
+}
+
+.ritual-flow {
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.ritual-flow li {
+  position: relative;
+  padding: 1rem 0.85rem;
+  border-top: 2px solid rgba(62, 207, 191, 0.55);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.ritual-flow__label {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.02rem;
+  letter-spacing: -0.02em;
+}
+
+.ritual-flow__hint {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 720px) {
+  .ritual-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .ritual-flow li {
+    border-top: none;
+    border-left: 2px solid rgba(62, 207, 191, 0.55);
+    padding-left: 1rem;
+  }
+}
+
+.failure-excerpt {
+  margin-top: 1.25rem;
+  max-width: 40rem;
+  padding: 1rem 1.15rem;
+  border-left: 3px solid var(--accent);
+  background: rgba(62, 207, 191, 0.06);
+}
+
+.failure-excerpt__title {
+  margin: 0 0 0.65rem !important;
+  color: var(--ink) !important;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+}
+
+.failure-excerpt ul {
+  margin: 0 0 0.85rem;
+  padding-left: 1.15rem;
+  color: var(--muted);
+}
+
+.failure-excerpt li {
+  margin-bottom: 0.35rem;
+}
+
+.failure-excerpt p:last-child {
+  margin: 0 !important;
+  color: var(--muted) !important;
+}
+
+.soft-sibling {
+  margin-top: 0.35rem;
+  padding-bottom: 2rem;
+}
+
+.soft-sibling p {
+  margin: 0;
+  max-width: 40rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.soft-sibling__link {
+  color: var(--ink);
+}
+
+.soft-sibling__note {
+  display: inline;
+  opacity: 0.75;
 }
 
 .reveal {

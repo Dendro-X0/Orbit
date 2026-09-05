@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auth — Orbit</title>
+    <meta name="description" content="Log in to Cloudflare, Vercel, Fly, and Netlify through Orbit." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header" data-site-header>
+      <div class="site-header__inner">
+        <a class="brand" href="/">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="3.2" fill="#3ecfbf" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="#3ecfbf" stroke-width="1.4" transform="rotate(-28 16 16)" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="rgba(232,238,244,0.35)" stroke-width="1.2" transform="rotate(42 16 16)" />
+          </svg>
+          Orbit
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <a href="/getting-started.html">Getting Started</a>
+          <a href="/ship.html">Ship</a>
+          <a href="/commands.html">Commands</a>
+          <a href="/providers.html">Providers</a>
+          <a href="https://github.com/Dendro-X0/Orbit">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="shell">
+      <div class="doc-layout">
+        <aside class="side-nav" aria-label="On this page">
+          <h2>On this page</h2>
+          <ul>
+            <li><a href="#methods">Login methods</a></li>
+            <li><a href="#oauth">Interactive OAuth</a></li>
+            <li><a href="#token">Tokens</a></li>
+            <li><a href="#logout">Logout</a></li>
+          </ul>
+        </aside>
+
+        <article class="prose">
+          <h1>Auth and login</h1>
+          <p class="summary">Orbit hands off to provider CLIs for OAuth, or stores API tokens in the OS keychain for headless use.</p>
+
+          <h2 id="methods">Login methods</h2>
+          <table>
+            <thead><tr><th>Context</th><th>Command</th></tr></thead>
+            <tbody>
+              <tr><td>Local laptop</td><td><code>orbit login &lt;provider&gt;</code></td></tr>
+              <tr><td>All detected providers</td><td><code>orbit login --all</code></td></tr>
+              <tr><td>Manual token paste</td><td><code>orbit login --guide</code></td></tr>
+              <tr><td>CI / scripting</td><td><code>orbit login --token -</code></td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="oauth">Interactive OAuth</h2>
+          <p>Default flow: confirm, then provider CLI login, then WhoAmI. Ship and configure use the same helper and skip providers that already have a CLI session.</p>
+
+          <h2 id="token">Tokens and keychain</h2>
+          <p>Orbit maps keychain tokens to <code>CLOUDFLARE_API_TOKEN</code>, <code>VERCEL_TOKEN</code>, <code>FLY_API_TOKEN</code>, and <code>NETLIFY_AUTH_TOKEN</code>. Failed WhoAmI deletes a bad token.</p>
+
+          <h2 id="logout">Logout</h2>
+          <p class="note"><code>orbit logout</code> clears Orbit keychain tokens only. Run <code>wrangler logout</code> or <code>vercel logout</code> to clear provider OAuth sessions.</p>
+        </article>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="shell">
+        <span>Orbit · MIT · v0.2.1</span>
+        <span><a href="/guides.html">All guides</a></span>
+      </div>
+    </footer>
+    <script src="/assets/site.js"></script>
+  </body>
+</html>

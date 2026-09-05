@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Providers — Orbit</title>
-    <meta name="description" content="How Orbit detects Cloudflare, Vercel, Fly.io, and Netlify and scopes status to what you ship." />
+    <meta name="description" content="How Orbit detects Cloudflare, Vercel, Fly, and Netlify and what it delegates to each CLI." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -51,7 +51,7 @@
         <article class="prose">
           <h1>Providers</h1>
           <p class="summary">
-            Orbit detects provider config in your tree and orchestrates the official CLIs. Detection is not the same as active ship scope.
+            Orbit detects provider config in your tree and orchestrates official CLIs. Detection is not the same as active ship scope.
           </p>
 
           <h2 id="detect">Detection</h2>
@@ -60,49 +60,55 @@
               <tr><th>Provider</th><th>Detection</th><th>Typical role</th></tr>
             </thead>
             <tbody>
-              <tr><td>Cloudflare</td><td><code>wrangler.toml</code></td><td>Workers API, D1</td></tr>
-              <tr><td>Vercel</td><td><code>vercel.json</code> or project markers</td><td>Static / docs</td></tr>
+              <tr><td>Cloudflare</td><td><code>wrangler.toml</code> (root or <code>apps/api</code>)</td><td>Workers API, D1</td></tr>
+              <tr><td>Vercel</td><td><code>vercel.json</code> / Next / Vite markers</td><td>Static / docs / Next.js</td></tr>
               <tr><td>Fly.io</td><td><code>fly.toml</code></td><td>Apps / containers</td></tr>
               <tr><td>Netlify</td><td><code>netlify.toml</code></td><td>Static sites</td></tr>
             </tbody>
           </table>
+          <p>Stack deploy order: Cloudflare → Fly → Vercel → Netlify.</p>
 
           <h2 id="cloudflare">Cloudflare</h2>
           <p>
-            Requires <code>wrangler</code> on <code>PATH</code>. Orbit uses login / whoami JSON, configure for D1 when applicable, deploy phases, and <code>orbit secrets</code> for documented Worker secrets.
+            Requires <code>wrangler</code>. Orbit runs whoami (JSON), create D1 + patch <code>database_id</code> on configure, migrate + deploy phases, and <code>orbit secrets</code>.
+          </p>
+          <p class="note">
+            Configure <strong>requires</strong> a D1 <code>database_name</code> in <code>wrangler.toml</code>. Deploy can skip migrate without D1; configure cannot.
           </p>
           <pre><code># Secrets (set via `wrangler secret put`):
 # API_KEY_PEPPER, GITHUB_TOKEN</code></pre>
           <p>
-            <code>CORS_ORIGINS</code> under <code>[vars]</code> feeds status recommendations. Localhost-only origins remind you before shipping a production frontend.
+            <code>CORS_ORIGINS</code> under <code>[vars]</code> feeds status recommendations. After changing vars, re-deploy the Worker.
           </p>
 
           <h2 id="vercel">Vercel</h2>
           <p>
-            Used for static docs and frontends. On full-stack with Cloudflare, Orbit can wire <code>VITE_API_URL</code> from the Worker URL before deploy.
+            Configure links the project and hints missing <code>VITE_*</code> from <code>.env.example</code> (does not invent values). Full-stack CF+Vercel deploys can auto-wire <code>VITE_API_URL</code> after the Worker URL is known; <code>orbit wire</code> does the same alone.
           </p>
 
           <h2 id="others">Fly.io and Netlify</h2>
           <p>
-            Detected when their config files exist. Choose them in <code>orbit ship</code>. Prefer each provider’s own docs for advanced flags; Orbit wraps the common path.
+            Detected from their config files. Ship treats Fly as API / backend and Netlify as static frontend. Prefer each provider’s own docs for advanced flags.
           </p>
 
           <h2 id="scope">Scope vs detection</h2>
           <p>
-            Detection answers what is in the repo. Scope answers what you are shipping now. A monorepo can detect Cloudflare and Vercel while status stays API-only until you pick Static site or Full-stack.
+            A monorepo can detect Cloudflare and Vercel while ship scope stays API-only. Status then skips Vercel until you choose Static site or Full-stack. Bare <code>orbit deploy</code> still deploys every detected provider.
           </p>
 
           <h2 id="troubleshoot">Common fixes</h2>
           <ul>
-            <li><strong>Doctor fails:</strong> install the scoped CLI, put it on <code>PATH</code>, then <code>orbit login</code></li>
-            <li><strong>Worker 1101 / 500:</strong> set required secrets with <code>orbit secrets --put …</code></li>
+            <li><strong>Doctor fails:</strong> install the scoped CLI, fix <code>PATH</code>, then <code>orbit login</code></li>
+            <li><strong>Configure without D1:</strong> add <code>[[d1_databases]]</code> with <code>database_name</code></li>
+            <li><strong>Worker 1101 / 500:</strong> <code>orbit secrets --put …</code></li>
             <li><strong>Health 404:</strong> use the path from status (often <code>/v1/health</code>)</li>
-            <li><strong>Status still asks for Vercel:</strong> re-run <code>orbit ship</code> and choose API / backend only</li>
-            <li><strong>Mid-deploy failure:</strong> <code>orbit logs</code> then <code>orbit retry</code></li>
+            <li><strong>Wrong providers on deploy:</strong> use <code>--provider</code> or ship scope, not bare <code>orbit deploy</code></li>
+            <li><strong>Mid-deploy failure:</strong> <code>orbit logs --failed</code> then <code>orbit retry</code></li>
           </ul>
           <p>
-            Longer troubleshooting notes live in
-            <a href="https://github.com/Dendro-X0/Orbit/blob/main/docs/troubleshooting.md">docs/troubleshooting.md</a>.
+            Longer notes:
+            <a href="https://github.com/Dendro-X0/Orbit/blob/main/docs/providers.md">providers.md</a>,
+            <a href="https://github.com/Dendro-X0/Orbit/blob/main/docs/troubleshooting.md">troubleshooting.md</a>.
           </p>
         </article>
       </div>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Getting started — Orbit</title>
-    <meta name="description" content="Install Orbit and complete your first scoped deploy." />
+    <meta name="description" content="Install Orbit and complete your first scoped deploy with ship, status, and secrets." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -39,9 +39,11 @@
         <aside class="side-nav" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+            <li><a href="#prereqs">Prerequisites</a></li>
             <li><a href="#install">Install</a></li>
             <li><a href="#first-deploy">First deploy</a></li>
             <li><a href="#after">After deploy</a></li>
+            <li><a href="#scope-note">Scope vs deploy</a></li>
             <li><a href="#checklist">Production checklist</a></li>
           </ul>
         </aside>
@@ -49,28 +51,36 @@
         <article class="prose">
           <h1>Getting started</h1>
           <p class="summary">
-            Install Orbit from source, run <code>orbit ship</code> in your project, then use status and secrets to finish production readiness.
+            Build Orbit, run <code>orbit ship</code> in your app repo, then use status and secrets until production is clean.
           </p>
 
+          <h2 id="prereqs">Prerequisites</h2>
+          <ul>
+            <li>Go 1.25+ to build from source</li>
+            <li>Interactive terminal for <code>orbit ship</code></li>
+            <li>Provider CLIs on <code>PATH</code>: <code>wrangler</code>, <code>vercel</code>, <code>fly</code>/<code>flyctl</code>, and/or <code>netlify</code></li>
+          </ul>
+
           <h2 id="install">Install</h2>
-          <p>Clone the repo and build a versioned binary:</p>
           <pre><code>git clone https://github.com/Dendro-X0/Orbit.git
 cd Orbit
 make build
 ./orbit version</code></pre>
-          <p>Add the binary to your <code>PATH</code>, or call it by full path from other projects.</p>
+          <p>
+            Put the binary on your <code>PATH</code>, or call it by full path. Override the project root with <code>orbit --path /path/to/project …</code>.
+          </p>
 
           <h2 id="first-deploy">First deploy</h2>
-          <p>From the project you want live:</p>
-          <pre><code>cd /path/to/your-project
+          <p>From the project you want live (not necessarily the Orbit source tree):</p>
+          <pre><code>orbit doctor
 orbit ship</code></pre>
           <ol>
-            <li>Choose <strong>API / backend</strong>, <strong>Static site / docs</strong>, or <strong>Full-stack</strong></li>
+            <li>Choose <strong>API / backend</strong>, <strong>Static site / docs</strong>, or <strong>Full-stack</strong> (default stays API when both API and docs are detected)</li>
             <li>Pick the provider for that scope</li>
-            <li>Log in, configure, set secrets, then deploy</li>
+            <li>Choose <strong>Ship — prepare and deploy</strong>: login → configure → secrets → deploy</li>
           </ol>
           <p>
-            Orbit stores the scope in <code>.orbit/state.json</code>. Later status and configure follow that intent.
+            Scope is stored in <code>.orbit/state.json</code>. Status and configure follow that intent afterward.
           </p>
 
           <h2 id="after">After deploy</h2>
@@ -78,24 +88,33 @@ orbit ship</code></pre>
 orbit secrets
 orbit open --target api</code></pre>
           <p>
-            Status recommends missing Worker secrets, localhost-only CORS, and the health URL detected from your API source when possible.
+            Status recommends missing Worker secrets, localhost-only CORS, docs deploy when relevant, and a health URL detected from your API source when possible.
+          </p>
+
+          <h2 id="scope-note">Scope vs bare deploy</h2>
+          <p class="note">
+            Bare <code>orbit deploy</code> (no <code>--provider</code>) deploys the <strong>full detected stack</strong>, not only the ship scope. Prefer <code>orbit ship</code> or <code>orbit deploy --provider cloudflare</code> for a single provider.
           </p>
 
           <h2 id="checklist">Production checklist</h2>
           <ol>
             <li><code>orbit ship</code> with the intended scope</li>
             <li><code>orbit doctor</code> for scoped CLIs and auth</li>
-            <li><code>orbit configure</code> for D1 / project links</li>
+            <li><code>orbit configure</code> (Cloudflare needs D1 <code>database_name</code> in <code>wrangler.toml</code>)</li>
             <li><code>orbit secrets</code> until required secrets are set</li>
             <li>Deploy via Ship or <code>orbit deploy --provider …</code></li>
             <li><code>orbit status</code> shows a live URL without blocking next steps</li>
-            <li>Update <code>CORS_ORIGINS</code> when a production docs URL exists</li>
+            <li>Update <code>CORS_ORIGINS</code> when a production docs URL exists, then re-deploy the Worker</li>
             <li>Hit the health route Orbit prints</li>
           </ol>
-          <p class="note">
-            Need the long form? See the markdown guides in
-            <a href="https://github.com/Dendro-X0/Orbit/tree/main/docs">docs/</a>
-            on GitHub.
+          <p>
+            More guides:
+            <a href="/auth.html">Auth</a>,
+            <a href="/configure-and-deploy.html">Configure &amp; deploy</a>,
+            <a href="/secrets.html">Secrets &amp; status</a>,
+            <a href="/state-and-runs.html">State &amp; runs</a>,
+            <a href="/troubleshooting.html">Troubleshooting</a>,
+            or <a href="/guides.html">all guides</a>.
           </p>
         </article>
       </div>

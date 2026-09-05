@@ -3,8 +3,15 @@
 ## Unreleased
 
 ### Docs
-- Markdown guides under `docs/` (start here, ship, commands, providers, secrets, troubleshooting)
+- Expanded guides: auth, configure/deploy/retry/wire, state and run artifacts
+- Accurate ship menus, scope vs bare `deploy`, Cloudflare D1 configure requirement, `open --target any`
 - Static docs site under `site/` for Vercel/Netlify deploy
+- Markdown index under `docs/`
+- Launch Phase 1 implementation roadmap (`docs/launch/roadmap.md`)
+- One-Stack Ship Checklist pack v0 draft (`docs/launch/pack/one-stack-ship-checklist-v0.md`)
+- Phase 1 HOOK private draft (`site/one-stack.html`)
+- TRACK sample pack §6 (`site/sample-when-deploy-fails.html`)
+- Phase 1 unlock signed: HOOK + TRACK public; Checkout deferred; kill window 21d / paid &lt; 3
 
 ## 0.2.1 — 2026-09-02
 

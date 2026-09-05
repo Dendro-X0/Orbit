@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ship workflow — Orbit</title>
-    <meta name="description" content="How orbit ship chooses project type, providers, and scoped actions." />
+    <meta name="description" content="How orbit ship chooses project type, providers, menus, and prepare-and-deploy." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -39,9 +39,11 @@
         <aside class="side-nav" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+            <li><a href="#when">When to use</a></li>
             <li><a href="#type">Project type</a></li>
             <li><a href="#provider">Provider</a></li>
-            <li><a href="#actions">Actions</a></li>
+            <li><a href="#menus">Action menus</a></li>
+            <li><a href="#prepare">Prepare and deploy</a></li>
             <li><a href="#scope">Scope file</a></li>
             <li><a href="#fullstack">Full-stack</a></li>
           </ul>
@@ -50,55 +52,57 @@
         <article class="prose">
           <h1>Ship workflow</h1>
           <p class="summary">
-            <code>orbit ship</code> (or plain <code>orbit</code> in a TTY) guides deploy by scope so you only log into providers you are shipping.
+            <code>orbit ship</code> (or plain <code>orbit</code> in a TTY) guides deploy by scope so you only log into providers you are shipping. Requires an interactive terminal.
           </p>
+
+          <h2 id="when">When to use ship vs bare deploy</h2>
+          <table>
+            <thead>
+              <tr><th>Situation</th><th>Prefer</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>First deploy, monorepo, unclear scope</td><td><code>orbit ship</code></td></tr>
+              <tr><td>Re-run prepare + deploy for saved scope</td><td><code>orbit ship</code></td></tr>
+              <tr><td>Scripted single provider</td><td><code>orbit deploy --provider …</code></td></tr>
+              <tr><td>Intentionally deploy every detected provider</td><td><code>orbit deploy</code></td></tr>
+            </tbody>
+          </table>
 
           <h2 id="type">Project type</h2>
           <table>
             <thead>
-              <tr>
-                <th>Choice</th>
-                <th>When</th>
-                <th>Providers</th>
-              </tr>
+              <tr><th>Choice</th><th>When</th><th>Providers</th></tr>
             </thead>
             <tbody>
-              <tr>
-                <td>API / backend</td>
-                <td>Workers API, Fly app, similar</td>
-                <td>One backend provider</td>
-              </tr>
-              <tr>
-                <td>Static site / docs</td>
-                <td>Marketing or docs frontend</td>
-                <td>One frontend provider</td>
-              </tr>
-              <tr>
-                <td>Full-stack</td>
-                <td>API and docs in one session</td>
-                <td>Backend + frontend</td>
-              </tr>
+              <tr><td>API / backend</td><td>Workers API, Fly app</td><td>One backend provider</td></tr>
+              <tr><td>Static site / docs</td><td>Docs or static frontend</td><td>One frontend provider</td></tr>
+              <tr><td>Full-stack</td><td>API and docs in one session</td><td>Backend + frontend</td></tr>
             </tbody>
           </table>
           <p>
-            When both Cloudflare and Vercel are detected, the default is API / backend. Full-stack is explicit so API-only work does not force a Vercel login.
+            Monorepos may <em>suggest</em> full-stack, but the default selection stays API / backend so you are not forced into Vercel login.
           </p>
 
           <h2 id="provider">Provider</h2>
           <p>
-            Orbit lists providers detected via <code>wrangler.toml</code>, <code>vercel.json</code>, <code>fly.toml</code>, and <code>netlify.toml</code>. Pick the match for your project type.
+            Detection uses <code>wrangler.toml</code>, <code>vercel.json</code>, <code>fly.toml</code>, and <code>netlify.toml</code>. Full-stack may ask you to confirm deploying to multiple providers.
           </p>
 
-          <h2 id="actions">Actions</h2>
-          <p>
-            After scope is saved, the menu offers login, configure, secrets, deploy, and status. Existing CLI sessions are checked before browser OAuth.
-          </p>
-          <p>
-            If this scope already deployed successfully, you get an Already deployed menu: open URL, view status, secrets, or confirm a re-deploy.
-          </p>
+          <h2 id="menus">Action menus</h2>
+          <p><strong>First time:</strong> Ship — prepare and deploy, Change scope, Log in, Configure, Set worker secrets, Deploy, View status, Quit.</p>
+          <p><strong>Already deployed:</strong> Open live URLs, View status, secrets if gaps remain, Change scope, Log in, Configure, <strong>Re-deploy (not recommended)</strong> with confirmation, Quit.</p>
+
+          <h2 id="prepare">Prepare and deploy</h2>
+          <ol>
+            <li>Ensure CLI login for selected providers (asks before browser OAuth)</li>
+            <li>Configure (Cloudflare may create D1 and patch <code>database_id</code>)</li>
+            <li>Prompt for missing Worker secrets (cancel aborts deploy)</li>
+            <li>Deploy in stack order; CF+Vercel can auto-wire <code>VITE_API_URL</code></li>
+            <li>Offer to open live URLs on success</li>
+          </ol>
+          <p>You may see two re-deploy confirmations: one from the ship menu, one from the deploy path.</p>
 
           <h2 id="scope">Scope file</h2>
-          <p>Active intent lives in <code>.orbit/state.json</code>:</p>
           <pre><code>{
   "environment": "production",
   "ship": {
@@ -107,14 +111,15 @@
     "providers": ["cloudflare"]
   }
 }</code></pre>
-          <p>Change scope by running <code>orbit ship</code> again with a different project type or provider set.</p>
+          <p><code>ship.providers</code> drives scoped status and configure. Change scope from the ship menu.</p>
 
           <h2 id="fullstack">Full-stack notes</h2>
           <p>
-            Full-stack usually deploys the API first, then docs. With Cloudflare and Vercel, Orbit can set <code>VITE_API_URL</code> on Vercel from the Worker URL before the Vercel phase.
+            Deploy order is Cloudflare → Fly → Vercel → Netlify. API-only Cloudflare is the dogfooded path in v0.2.x; treat full-stack as beta until you run both providers end to end.
           </p>
-          <p class="note">
-            API-only production is the supported happy path in v0.2.x. Treat full-stack as beta until both providers are dogfooded end to end.
+          <p>
+            Full detail:
+            <a href="https://github.com/Dendro-X0/Orbit/blob/main/docs/ship.md">docs/ship.md</a>.
           </p>
         </article>
       </div>

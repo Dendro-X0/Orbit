@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guides — Orbit</title>
+    <meta name="description" content="All Orbit documentation guides in one place." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header" data-site-header>
+      <div class="site-header__inner">
+        <a class="brand" href="/">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="3.2" fill="#3ecfbf" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="#3ecfbf" stroke-width="1.4" transform="rotate(-28 16 16)" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="rgba(232,238,244,0.35)" stroke-width="1.2" transform="rotate(42 16 16)" />
+          </svg>
+          Orbit
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <a href="/getting-started.html">Getting Started</a>
+          <a href="/ship.html">Ship</a>
+          <a href="/commands.html">Commands</a>
+          <a href="/providers.html">Providers</a>
+          <a href="https://github.com/Dendro-X0/Orbit">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="shell">
+      <div class="doc-layout">
+        <article class="prose">
+          <h1>Guides</h1>
+          <p class="summary">Pick a topic below. Each page matches the markdown guides in the Orbit repo.</p>
+          <div class="prose-card-grid">
+            <a class="prose-card" href="/getting-started.html"><strong>Getting started</strong><span>Install, first ship, production checklist</span></a>
+            <a class="prose-card" href="/ship.html"><strong>Ship workflow</strong><span>Project type, menus, prepare and deploy</span></a>
+            <a class="prose-card" href="/commands.html"><strong>Commands</strong><span>Full CLI reference and flags</span></a>
+            <a class="prose-card" href="/providers.html"><strong>Providers</strong><span>Detection, Cloudflare, Vercel, Fly, Netlify</span></a>
+            <a class="prose-card" href="/auth.html"><strong>Auth</strong><span>OAuth, tokens, keychain, logout</span></a>
+            <a class="prose-card" href="/configure-and-deploy.html"><strong>Configure &amp; deploy</strong><span>Configure, deploy, retry, wire</span></a>
+            <a class="prose-card" href="/secrets.html"><strong>Secrets &amp; status</strong><span>Worker secrets and status recommendations</span></a>
+            <a class="prose-card" href="/state-and-runs.html"><strong>State &amp; runs</strong><span>state.json and run artifacts</span></a>
+            <a class="prose-card" href="/troubleshooting.html"><strong>Troubleshooting</strong><span>Doctor, auth, deploy, health, scope</span></a>
+          </div>
+          <p>Markdown source: <a href="https://github.com/Dendro-X0/Orbit/tree/main/docs">github.com/Dendro-X0/Orbit/docs</a></p>
+        </article>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="shell">
+        <span>Orbit · MIT · v0.2.1</span>
+        <span><a href="/getting-started.html">Start with getting started</a></span>
+      </div>
+    </footer>
+    <script src="/assets/site.js"></script>
+  </body>
+</html>

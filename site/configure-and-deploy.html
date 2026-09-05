@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configure and deploy — Orbit</title>
+    <meta name="description" content="Configure providers, deploy, retry failed runs, and wire VITE_API_URL." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header" data-site-header>
+      <div class="site-header__inner">
+        <a class="brand" href="/">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="3.2" fill="#3ecfbf" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="#3ecfbf" stroke-width="1.4" transform="rotate(-28 16 16)" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="rgba(232,238,244,0.35)" stroke-width="1.2" transform="rotate(42 16 16)" />
+          </svg>
+          Orbit
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <a href="/getting-started.html">Getting Started</a>
+          <a href="/ship.html">Ship</a>
+          <a href="/commands.html">Commands</a>
+          <a href="/providers.html">Providers</a>
+          <a href="https://github.com/Dendro-X0/Orbit">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="shell">
+      <div class="doc-layout">
+        <aside class="side-nav" aria-label="On this page">
+          <h2>On this page</h2>
+          <ul>
+            <li><a href="#configure">Configure</a></li>
+            <li><a href="#deploy">Deploy</a></li>
+            <li><a href="#retry">Retry</a></li>
+            <li><a href="#wire">Wire</a></li>
+          </ul>
+        </aside>
+
+        <article class="prose">
+          <h1>Configure, deploy, retry, wire</h1>
+          <p class="summary">Non-ship entry points for setup and deploy. Configure follows ship scope; bare deploy hits the full detected stack.</p>
+
+          <h2 id="configure">Configure</h2>
+          <pre><code>orbit configure
+orbit configure --provider cloudflare
+orbit configure --dry-run --yes</code></pre>
+          <p>Without <code>--all</code> or <code>--provider</code>, configure follows the active ship scope. Cloudflare configure requires D1 <code>database_name</code> and may create the database and patch <code>database_id</code>.</p>
+
+          <h2 id="deploy">Deploy</h2>
+          <pre><code>orbit deploy --provider cloudflare
+orbit deploy</code></pre>
+          <p class="note">Bare <code>orbit deploy</code> deploys every detected provider in order: Cloudflare, Fly, Vercel, Netlify. It does not use ship scope.</p>
+
+          <h2 id="retry">Retry</h2>
+          <pre><code>orbit logs --failed
+orbit retry
+orbit retry --from-step cloudflare-deploy</code></pre>
+          <p>Reads <code>failure.json</code>, slices the plan from the failed step, writes a new run directory.</p>
+
+          <h2 id="wire">Wire</h2>
+          <p><code>orbit wire</code> sets <code>VITE_API_URL</code> on Vercel from the last Workers URL. Full-stack CF+Vercel deploys insert an automatic wire step before Vercel deploy.</p>
+        </article>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="shell">
+        <span>Orbit · MIT · v0.2.1</span>
+        <span><a href="/guides.html">All guides</a></span>
+      </div>
+    </footer>
+    <script src="/assets/site.js"></script>
+  </body>
+</html>

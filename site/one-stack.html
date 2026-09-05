@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orbit — Ship one stack</title>
+    <meta
+      name="description"
+      content="Guided ship ritual for Cloudflare Workers plus a Vercel or Pages companion. Official CLIs stay source of truth. Free doctor and ship demo."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header" data-site-header>
+      <div class="site-header__inner">
+        <a class="brand" href="/">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="3.2" fill="#3ecfbf" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="#3ecfbf" stroke-width="1.4" transform="rotate(-28 16 16)" />
+            <ellipse cx="16" cy="16" rx="12" ry="5.5" fill="none" stroke="rgba(232,238,244,0.35)" stroke-width="1.2" transform="rotate(42 16 16)" />
+          </svg>
+          Orbit
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <a href="/getting-started.html">Getting Started</a>
+          <a href="/ship.html">Ship</a>
+          <a href="/commands.html">Commands</a>
+          <a href="/one-stack.html" aria-current="page">One stack</a>
+          <a href="https://github.com/Dendro-X0/Orbit">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-visual" aria-hidden="true">
+        <svg viewBox="0 0 1200 800" preserveAspectRatio="xMaxYMid slice">
+          <defs>
+            <radialGradient id="glow-hook" cx="70%" cy="40%" r="45%">
+              <stop offset="0%" stop-color="#3ecfbf" stop-opacity="0.35" />
+              <stop offset="100%" stop-color="#3ecfbf" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="1200" height="800" fill="url(#glow-hook)" />
+          <g class="orbit-ring-slow" transform="translate(780 320)">
+            <ellipse cx="0" cy="0" rx="280" ry="110" fill="none" stroke="rgba(232,238,244,0.14)" stroke-width="1.5" />
+            <circle cx="280" cy="0" r="5" fill="#3ecfbf" />
+          </g>
+          <g class="orbit-ring" transform="translate(780 320)">
+            <ellipse cx="0" cy="0" rx="190" ry="74" fill="none" stroke="rgba(62,207,191,0.45)" stroke-width="2" transform="rotate(-34)" />
+            <circle cx="155" cy="-42" r="4" fill="#e8eef4" />
+          </g>
+          <circle cx="780" cy="320" r="18" fill="#3ecfbf" />
+          <circle cx="780" cy="320" r="38" fill="none" stroke="rgba(62,207,191,0.35)" stroke-width="2" />
+        </svg>
+      </div>
+      <div class="shell hero-shell">
+        <div class="hero-copy">
+          <p class="draft-banner">Phase 1 · one stack (Workers + companion)</p>
+          <p class="hero-brand">Orbit</p>
+          <h1>Ship one stack without memorizing four CLIs.</h1>
+          <p class="lede">
+            Cloudflare Workers API plus a Vercel or Pages companion. Official tools stay the source of truth — Orbit runs the guided ritual.
+          </p>
+          <div class="cta-row">
+            <a class="button button-primary" href="/getting-started.html">Read getting started</a>
+            <a class="button button-ghost" href="#demo">Run doctor / ship</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="shell">
+      <section class="section reveal" id="truth">
+        <h2>Official CLIs remain source of truth</h2>
+        <p>
+          <code>wrangler</code> and <code>vercel</code> own OAuth, linking, billing, and the deploy itself. Orbit owns scope, menus, phased logs, and agent-readable failures under <code>.orbit/runs/</code>.
+        </p>
+        <p class="section-support">
+          Phase 1 documents one stack only. The free CLI still supports more providers; this page does not market them.
+        </p>
+      </section>
+
+      <section class="section reveal" id="demo">
+        <h2>Demo path — no payment</h2>
+        <p>Build Orbit, then from your app repo (Workers API + companion docs/web):</p>
+        <div class="command-block"><code>orbit doctor
+orbit ship</code></div>
+        <p style="margin-top: 1.25rem">
+          Choose <strong>API / backend → Cloudflare</strong> first. After the Worker is healthy, ship docs with
+          <strong>Static site / docs → Vercel</strong>. Full walkthrough:
+          <a href="/getting-started.html">getting started</a>
+          ·
+          <a href="/ship.html">ship workflow</a>.
+        </p>
+        <p class="soft-cta">
+          Optional ritual pack (checklist when checkout unlocks — not yet authorized):
+          <a href="https://github.com/Dendro-X0/Orbit/blob/main/docs/launch/pack/one-stack-ship-checklist-v0.md">One-Stack Ship Checklist draft</a>
+          — soft CTA only; CLI stays free. No full-pack trial.
+        </p>
+      </section>
+
+      <section class="section reveal" id="ritual">
+        <h2>One-stack ritual</h2>
+        <p>Login → configure → secrets → deploy → health. Same order every production ship.</p>
+        <ol class="ritual-flow" aria-label="Ship ritual steps">
+          <li>
+            <span class="ritual-flow__label">Login</span>
+            <span class="ritual-flow__hint">Provider CLI session</span>
+          </li>
+          <li>
+            <span class="ritual-flow__label">Configure</span>
+            <span class="ritual-flow__hint">D1 / project link</span>
+          </li>
+          <li>
+            <span class="ritual-flow__label">Secrets</span>
+            <span class="ritual-flow__hint">Documented Worker names</span>
+          </li>
+          <li>
+            <span class="ritual-flow__label">Deploy</span>
+            <span class="ritual-flow__hint">Scoped providers only</span>
+          </li>
+          <li>
+            <span class="ritual-flow__label">Health</span>
+            <span class="ritual-flow__hint"><code>orbit status</code> + curl</span>
+          </li>
+        </ol>
+      </section>
+
+      <section class="section reveal" id="honesty">
+        <h2>Failure honesty</h2>
+        <p>
+          When a step fails, Orbit stops and writes <code>failure.json</code> — not a blank terminal. Read it, fix the step, retry.
+        </p>
+        <div class="failure-excerpt" role="region" aria-label="Example failure next steps">
+          <p class="failure-excerpt__title">From <code>.orbit/runs/…/failure.json</code></p>
+          <ul>
+            <li><code>auth.required</code> → <code>orbit login …</code> then <code>orbit retry</code></li>
+            <li><code>secrets.missing</code> → <code>orbit secrets --put …</code></li>
+            <li><code>deploy.failed</code> → step logs, fix provider error, retry</li>
+          </ul>
+          <p>
+            Free sample of this section:
+            <a href="/sample-when-deploy-fails.html">When deploy fails</a>
+            (pack §6 · TRACK).
+            Full artifact map:
+            <a href="/state-and-runs.html">state and runs</a>
+            ·
+            <a href="/troubleshooting.html">troubleshooting</a>.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <footer class="site-footer">
+      <div class="shell">
+        <span>Orbit · MIT · CLI free</span>
+        <span>
+          <a href="/getting-started.html">Getting started</a>
+          ·
+          <a href="https://github.com/Dendro-X0/Orbit">Source</a>
+        </span>
+      </div>
+      <div class="shell soft-sibling">
+        <p>
+          Shipping a desktop binary?
+          <span class="soft-sibling__link">Signet — prove the bits</span>
+          <span class="soft-sibling__note">(sibling HOOK URL when live; soft footer only — no Assess CTA)</span>
+        </p>
+      </div>
+    </footer>
+    <script src="/assets/site.js"></script>
+  </body>
+</html>
