@@ -10,7 +10,8 @@
 3. Wire **Checkout** later (payment rail) → check Unlock #6 Checkout · L4 deliver pack.  
 4. **Kill review 2026-09-25:** if paid &lt; 3 → PARK CONVERT.
 
-**Product ship (A+1):** LICENSE + GoReleaser + install docs for **0.2.2** — tag `v0.2.2` after merge to publish GitHub Release. Does not change launch next steps above.
+**Product ship (A+1):** Done — MIT LICENSE, GoReleaser, install docs, **v0.2.2** published: https://github.com/Dendro-X0/Orbit/releases/tag/v0.2.2  
+Launch next steps above unchanged.
 
 **Fixture:** Assess API + docs  
 **HOOK:** `/one-stack.html`  
