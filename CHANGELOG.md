@@ -2,15 +2,22 @@
 
 ## Unreleased
 
+## 0.2.2 — 2026-09-05
+
+### Distribution
+- MIT `LICENSE` in the repository root
+- GitHub Releases via GoReleaser (linux/darwin/windows · amd64/arm64)
+- Default source version string synced to `0.2.2-dev` (release builds still inject via ldflags)
+
 ### Docs
 - Expanded guides: auth, configure/deploy/retry/wire, state and run artifacts
 - Accurate ship menus, scope vs bare `deploy`, Cloudflare D1 configure requirement, `open --target any`
 - Static docs site under `site/` for Vercel/Netlify deploy
 - Markdown index under `docs/`
+- Install docs prefer release binaries; source build remains supported
 - Launch Phase 1 implementation roadmap (`docs/launch/roadmap.md`)
 - One-Stack Ship Checklist pack v0 draft (`docs/launch/pack/one-stack-ship-checklist-v0.md`)
-- Phase 1 HOOK private draft (`site/one-stack.html`)
-- TRACK sample pack §6 (`site/sample-when-deploy-fails.html`)
+- Phase 1 HOOK (`site/one-stack.html`) and TRACK sample pack §6 (`site/sample-when-deploy-fails.html`)
 - Phase 1 unlock signed: HOOK + TRACK public; Checkout deferred; kill window 21d / paid &lt; 3
 
 ## 0.2.1 — 2026-09-02

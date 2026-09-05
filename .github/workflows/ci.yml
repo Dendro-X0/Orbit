@@ -17,14 +17,8 @@ jobs:
       - run: go mod download
       - name: Build and smoke test
         run: |
-          VERSION=0.2.1
-          COMMIT=$(git rev-parse --short HEAD)
-          DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          go build -ldflags "-s -w \
-            -X github.com/Dendro-X0/Orbit/internal/cli.Version=${VERSION} \
-            -X github.com/Dendro-X0/Orbit/internal/cli.Commit=${COMMIT} \
-            -X github.com/Dendro-X0/Orbit/internal/cli.BuildDate=${DATE}" \
-            -o bin/orbit ./cmd/orbit
-          ./bin/orbit version | grep -q "orbit 0.2.1"
+          make build
+          VERSION=$(grep -E '^VERSION \?=' Makefile | awk '{print $3}')
+          ./orbit version | grep -q "orbit ${VERSION}"
       - run: go test ./...
       - run: go vet ./...

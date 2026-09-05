@@ -8,15 +8,20 @@ Indie and SMB teams with a Workers API, a static or Vite docs site, a Fly app, o
 
 ## Prerequisites
 
-- Go 1.25+ to build from source
 - An interactive terminal for `orbit ship` and most wizards
 - Provider CLIs on `PATH` for the providers you will use:
   - Cloudflare: `wrangler`
   - Vercel: `vercel`
   - Fly.io: `fly` or `flyctl`
   - Netlify: `netlify`
+- Go 1.25+ only if you build from source
 
 ## Install
+
+**Release binary (recommended):** download the archive for your OS from
+[GitHub Releases](https://github.com/Dendro-X0/Orbit/releases/latest), extract `orbit` (Windows: `orbit.exe`), and put it on your `PATH`.
+
+**Build from source:**
 
 ```bash
 git clone https://github.com/Dendro-X0/Orbit.git
@@ -31,7 +36,7 @@ On Windows the binary is often `orbit.exe`. Put it on your `PATH`, or call it by
 "/path/to/Orbit/orbit" ship
 ```
 
-`make build` injects version, commit, and build date via ldflags. Without that, `orbit version` may show a `-dev` version string.
+`make build` injects version, commit, and build date via ldflags. Without that, `orbit version` may show a `-dev` version string. Release archives are built the same way via GoReleaser.
 
 ## Project root detection
 

@@ -6,6 +6,11 @@ Deploy portal for indie and SMB stacks. Orbit orchestrates `wrangler`, `vercel`,
 
 ## Install
 
+**Release binary (recommended):** download the archive for your OS from
+[GitHub Releases](https://github.com/Dendro-X0/Orbit/releases), extract `orbit` (or `orbit.exe` on Windows), and put it on your `PATH`.
+
+**Build from source:**
+
 ```bash
 git clone https://github.com/Dendro-X0/Orbit.git
 cd Orbit

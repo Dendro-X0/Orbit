@@ -1,6 +1,6 @@
 # Current session handoff
 
-**Updated:** 2026-09-04  
+**Updated:** 2026-09-05  
 **Band:** **Launch Phase 1** — One-Stack Ship Checklist (HOOK + CONVERT) · **UNLOCKED** (partial)
 
 ## Next atomic step
@@ -9,6 +9,8 @@
 2. **Stage 6:** Quality traffic when ready ([traffic.md](../launch/traffic.md)).  
 3. Wire **Checkout** later (payment rail) → check Unlock #6 Checkout · L4 deliver pack.  
 4. **Kill review 2026-09-25:** if paid &lt; 3 → PARK CONVERT.
+
+**Product ship (A+1):** LICENSE + GoReleaser + install docs for **0.2.2** — tag `v0.2.2` after merge to publish GitHub Release. Does not change launch next steps above.
 
 **Fixture:** Assess API + docs  
 **HOOK:** `/one-stack.html`  
@@ -27,9 +29,11 @@
 | Launch | `docs/launch/*`, `specs/launch/*` |
 | CLI | `cmd/`, `internal/`, `docs/ship.md` |
 | Site mirror | `site/` |
+| Distribution | `LICENSE`, `.goreleaser.yaml`, `.github/workflows/release.yml` |
 
 ## Recently completed
 
+- **2026-09-05:** Product ship A+1 — MIT LICENSE, version `0.2.2`, GoReleaser release workflow, binary install docs
 - **2026-09-04:** Stages 4–5 partial — unlock signed; HOOK+TRACK public (`noindex` removed); Checkout deferred
 - **2026-09-04:** Stage 3 — TRACK sample pack §6
 - **2026-09-04:** Stage 2 — HOOK `site/one-stack.html`

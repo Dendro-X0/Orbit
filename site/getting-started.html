@@ -51,17 +51,23 @@
         <article class="prose">
           <h1>Getting started</h1>
           <p class="summary">
-            Build Orbit, run <code>orbit ship</code> in your app repo, then use status and secrets until production is clean.
+            Install a release binary (or build from source), run <code>orbit ship</code> in your app repo, then use status and secrets until production is clean.
           </p>
 
           <h2 id="prereqs">Prerequisites</h2>
           <ul>
-            <li>Go 1.25+ to build from source</li>
             <li>Interactive terminal for <code>orbit ship</code></li>
             <li>Provider CLIs on <code>PATH</code>: <code>wrangler</code>, <code>vercel</code>, <code>fly</code>/<code>flyctl</code>, and/or <code>netlify</code></li>
+            <li>Go 1.25+ only if you build from source</li>
           </ul>
 
           <h2 id="install">Install</h2>
+          <p>
+            <strong>Release binary (recommended):</strong> download the archive for your OS from
+            <a href="https://github.com/Dendro-X0/Orbit/releases/latest">GitHub Releases</a>,
+            extract <code>orbit</code> (Windows: <code>orbit.exe</code>), and put it on your <code>PATH</code>.
+          </p>
+          <p>Or build from source:</p>
           <pre><code>git clone https://github.com/Dendro-X0/Orbit.git
 cd Orbit
 make build
@@ -122,7 +128,7 @@ orbit open --target api</code></pre>
 
     <footer class="site-footer">
       <div class="shell">
-        <span>Orbit · MIT · v0.2.1</span>
+        <span>Orbit · MIT · v0.2.2</span>
         <span><a href="/ship.html">Next: Ship workflow</a></span>
       </div>
     </footer>
